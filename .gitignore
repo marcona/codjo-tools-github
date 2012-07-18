@@ -1,1 +1,10 @@
-target/
+*.ipr
+*.iws
+*.iml
+target
+.svn
+APDescription.txt
+MTPs-*.*
+pom.xml.*
+release.properties
+.DS_Store

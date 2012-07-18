@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+    | POM Relationships
+    -->
+    <groupId>net.codjo.github</groupId>
+    <artifactId>codjo-github-tool</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <!-- START SNIPPET: super-pom -->
+    <parent>
+        <groupId>net.codjo.pom</groupId>
+        <artifactId>codjo-pom-external</artifactId>
+        <version>SNAPSHOT</version>
+    </parent>
+    <!-- END SNIPPET: super-pom -->
+    <dependencies>
+        <dependency>
+            <groupId>net.codjo.util</groupId>
+            <artifactId>codjo-util</artifactId>
+        </dependency>
+
+        <!-- github core api -->
+        <dependency>
+            <groupId>org.eclipse.mylyn.github</groupId>
+            <artifactId>org.eclipse.egit.github.core</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.1</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <properties>
+        <jetty.version>6.1.25</jetty.version>
+    </properties>
+
+    <name>codjo-github-tool</name>
+    <description>Application standalone pour la manipulation de github</description>
+
+    <packaging>jar</packaging>
+    <build>
+        <finalName>github</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.marc.onnet.GithubUtil</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <profiles/>
+
+    <scm>
+        <connection>scm:git:https://github.com/marcona/codjo-github-tool.git</connection>
+        <developerConnection>scm:git:https://github.com/marcona/codjo-github-tool.git</developerConnection>
+        <url>https://github.com/marcona/codjo-github-tool</url>
+    </scm>
+</project>
