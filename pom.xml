@@ -6,7 +6,7 @@
     | POM Relationships
     -->
     <groupId>net.codjo.github</groupId>
-    <artifactId>codjo-github-tool</artifactId>
+    <artifactId>codjo-tools-github</artifactId>
     <version>1.0-SNAPSHOT</version>
     <!-- START SNIPPET: super-pom -->
     <parent>
@@ -40,12 +40,12 @@
         <jetty.version>6.1.25</jetty.version>
     </properties>
 
-    <name>codjo-github-tool</name>
+    <name>codjo-tools-github</name>
     <description>Application standalone pour la manipulation de github</description>
 
     <packaging>jar</packaging>
     <build>
-        <finalName>github</finalName>
+        <finalName>codjo-tools-github</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -53,7 +53,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.marc.onnet.GithubUtil</mainClass>
+                            <mainClass>net.codjo.tools.github.GithubUtil</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
                         </manifest>
@@ -67,8 +67,8 @@
     <profiles/>
 
     <scm>
-        <connection>scm:git:https://github.com/marcona/codjo-github-tool.git</connection>
-        <developerConnection>scm:git:https://github.com/marcona/codjo-github-tool.git</developerConnection>
-        <url>https://github.com/marcona/codjo-github-tool</url>
+        <connection>scm:git:https://github.com/marcona/codjo-tools-github.git</connection>
+        <developerConnection>scm:git:https://github.com/marcona/codjo-tools-github.git</developerConnection>
+        <url>https://github.com/marcona/codjo-tools-github</url>
     </scm>
 </project>

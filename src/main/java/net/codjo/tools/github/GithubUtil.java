@@ -1,4 +1,4 @@
-package com.marc.onnet;
+package net.codjo.tools.github;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;

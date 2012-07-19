@@ -1,4 +1,4 @@
-package com.marc.onnet;
+package net.codjo.tools.github;
 import java.io.File;
 import java.io.IOException;
 import net.codjo.util.file.FileUtil;

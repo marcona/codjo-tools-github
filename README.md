@@ -1,4 +1,4 @@
-codjo-github-tool
+codjo-tools-github
 =================
 
 A very simple tool for github to be used in command line
@@ -11,10 +11,10 @@ TODO list :
  - deal with external dependencies
      - avoid if possible external dependencies (actually use egit from eclipse)
      - show the github quota
- - refactoring (package codjo.tools)
+ - DONE refactoring (package codjo.tools)
  - DONE Avoid delete repo on codjo account
  - add unit tests ... i know its bad ;-)
- - add .cmd and .ksh
+ - add .cmd(DONE) and .ksh
  - avoid multiple if-else to select method
  - use netrc/_netrc by default
  - allow more options (skip proxy, use of _netrc file)
