@@ -2,6 +2,8 @@ package com.marc.onnet;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import org.eclipse.egit.github.core.Repository;
@@ -15,6 +17,7 @@ import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_REPOS
  *
  */
 public class GithubUtil {
+    final static SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private GitHubClient client = new GitHubClient();
 
 
@@ -45,11 +48,26 @@ public class GithubUtil {
     }
 
 
+    public void printGithubQuotas() throws IOException {
+
+        int remainingRequests = client.getRemainingRequests();
+        if (remainingRequests != -1) {
+            System.out.println("\n\n\tFor your information, you have " + remainingRequests + " requests left");
+        }
+    }
+
+
     public List<Repository> list(String githubUser, String githubPassword, String repoName) throws IOException {
         client = initGithubClient(githubUser, githubPassword);
 
+        //TODO[refactoring]
         RepositoryService repositoryService = new RepositoryService(client);
-        return repositoryService.getRepositories(githubUser);
+        if (repoName != null && !repoName.trim().isEmpty()) {
+            return repositoryService.getRepositories(repoName);
+        }
+        else {
+            return repositoryService.getRepositories(githubUser);
+        }
     }
 
 
@@ -100,8 +118,11 @@ public class GithubUtil {
             if ("list".equals(method)) {
                 List<Repository> repoList = githubUtil.list(githubUser, githubPassword, repoName);
                 System.out.println("\nHere are the repositories from " + githubUser);
+                System.out.println("\tLast push\t\t\t\tName");
                 for (Repository repository : repoList) {
-                    System.out.println("\t" + repository.getName());
+                    Date pushedAt = repository.getPushedAt();
+                    System.out
+                          .println("\t" + format.format(pushedAt) + "\t\t" + repository.getName());
                 }
             }
             else if ("delete".equals(method)) {
@@ -127,13 +148,13 @@ public class GithubUtil {
                 githubUtil.forkRepo(githubUser, githubPassword, repoName);
             }
             else {
-                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n");
-                System.out.println(" Vouliez vous dire :");
-                System.out.println("         - gh list ");
-                System.out.println("         - gh fork [REPO_NAME]");
-                System.out.println("         - gh delete [REPO_NAME]");
-                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                githubUtil.printOctopuss();
+                System.out.println(" Did you mean :");
+                System.out.println("         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME");
+                System.out.println("         - gh fork REPO_NAME      : fork a repository from codjo");
+                System.out.println("         - gh delete REPO_NAME    : delete a repository if exists");
             }
+            githubUtil.printGithubQuotas();
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -142,10 +163,11 @@ public class GithubUtil {
 
 
     private void printOctopuss() {
-        String octopus = "          ,---.           **********************************************\n"
+        String octopus = "\n\n"
+                         + "          ,---.           **********************************************\n"
                          + "         ( @ @ )          *             Codjo Github Tool              *\n"
                          + "          ).-.(           * a really cool command line tool for github *\n"
-                         + "        // |||\\\\          **********************************************\n";
+                         + "         //|||\\\\          **********************************************\n";
         System.out.println(octopus);
     }
 }

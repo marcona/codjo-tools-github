@@ -23,3 +23,4 @@ TODO list :
  - Pull request management
    - list actual opened pull requests for codjo-pom pull request ("include in release X.XX...")
  - Verify if a "chantier" is really opened (last commit) on codjo-sandbox
+ - add interactive fork : "Wich codjo repository would you like to fork ?"
