@@ -2,85 +2,36 @@ package net.codjo.tools.github;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
-import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.client.RequestException;
-import org.eclipse.egit.github.core.service.RepositoryService;
 
-import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_REPOS;
+import org.eclipse.egit.github.core.Repository;
+
 /**
  *
  */
 public class GithubUtil {
-    final static SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-    private GitHubClient client = new GitHubClient();
+    public static final String OCTOPUS = "\n\n"
+            + "          ,---.           **********************************************\n"
+            + "         ( @ @ )          *             Codjo Github Tool              *\n"
+            + "          ).-.(           * a really cool command line tool for github *\n"
+            + "         //|||\\\\          **********************************************\n";
 
 
-    public void forkRepo(String githubUser, String githubPassword, String repoName) throws IOException {
-        client = initGithubClient(githubUser, githubPassword);
-        RepositoryService repositoryService = new RepositoryService(client);
+
+
+    private static void initProxyConfiguration() throws IOException {
+        System.out.println(OCTOPUS);
         try {
-            repositoryService.forkRepository(new RepositoryId("codjo", repoName));
-            System.out.println("\tRepository " + repoName + " has been forked from codjo.");
-        }
-        catch (RequestException e) {
-            System.out.println("\tRepository " + repoName + " doesn't exist\n\n");
-            e.printStackTrace();
-        }
-    }
-
-
-    public void deleteRepo(String githubUser, String githubPassword, String repoName) throws IOException {
-        client = initGithubClient(githubUser, githubPassword);
-        try {
-            client.delete(SEGMENT_REPOS + "/" + githubUser + "/" + repoName);
-            System.out.println("\tRepository " + repoName + " has been removed from " + githubUser + " account");
-        }
-        catch (RequestException e) {
-            System.err.println("\tRepository " + repoName + " doesn't exist\n\n");
-            e.printStackTrace();
+            GitConfigUtil configUtil = new GitConfigUtil();
+            setProxyAuthentication(configUtil);
+        } catch (Exception e) {
+            System.out.println("There was a problem while loading proxy configuration in .gitconfig file");
+            System.out.println(" \tPrxoxy configuration is ignored.");
         }
     }
 
 
-    public void printGithubQuotas() throws IOException {
-
-        int remainingRequests = client.getRemainingRequests();
-        if (remainingRequests != -1) {
-            System.out.println("\n\n\tFor your information, you have " + remainingRequests + " requests left");
-        }
-    }
-
-
-    public List<Repository> list(String githubUser, String githubPassword, String repoName) throws IOException {
-        client = initGithubClient(githubUser, githubPassword);
-
-        //TODO[refactoring]
-        RepositoryService repositoryService = new RepositoryService(client);
-        if (repoName != null && !repoName.trim().isEmpty()) {
-            return repositoryService.getRepositories(repoName);
-        }
-        else {
-            return repositoryService.getRepositories(githubUser);
-        }
-    }
-
-
-    private GitHubClient initGithubClient(String githubUser, String githubPassword) throws IOException {
-        printOctopuss();
-        GitConfigUtil configUtil = new GitConfigUtil();
-        setProxyAuthentication(configUtil);
-        client.setCredentials(githubUser, githubPassword);
-        return client;
-    }
-
-
-    private void setProxyAuthentication(final GitConfigUtil configUtil) throws IOException {
+    private static void setProxyAuthentication(final GitConfigUtil configUtil) throws IOException {
 
         System.setProperty("http.proxyHost", configUtil.getProxyHost());
         System.setProperty("http.proxyPort", "" + configUtil.getProxyPort());
@@ -105,7 +56,7 @@ public class GithubUtil {
 
 
     public static void main(String[] args) {
-        GithubUtil githubUtil = new GithubUtil();
+        final GithubUtilService service = new GithubUtilService();
         try {
             String method = args[0];
             String githubUser = args[1];
@@ -115,46 +66,34 @@ public class GithubUtil {
                 repoName = args[3];
             }
 
+            initProxyConfiguration();
+            service.initGithubClient(githubUser,githubPassword);
+
             if ("list".equals(method)) {
-                List<Repository> repoList = githubUtil.list(githubUser, githubPassword, repoName);
-                System.out.println("\nHere are the repositories from " + githubUser);
-                System.out.println("\tLast push\t\t\t\tName");
-                for (Repository repository : repoList) {
-                    Date pushedAt = repository.getPushedAt();
-                    System.out
-                          .println("\t" + format.format(pushedAt) + "\t\t" + repository.getName());
-                }
+                List<Repository> repoList = service.list(githubUser, githubPassword, repoName);
+                ConsoleManager.printRepositoryList(repoList, githubUser);
             }
             else if ("delete".equals(method)) {
-                if ("codjo".equalsIgnoreCase(githubUser)) {
-                    System.out.println("\tRepositoy deletion with codjo account is not allowed.");
-                    System.out.println("\t--> Please, use web interface instead.");
-                }
-                else {
-                    System.out
-                          .print("Do you really want to delete the repository " + repoName + " on  " + githubUser
-                                 + " account ? (y = yes / n = no/) : ");
-                    String userInputAsString = new Scanner(System.in).next();
-                    char userInput = 'n';
-                    if (userInputAsString != null && !userInputAsString.trim().isEmpty()) {
-                        userInput = userInputAsString.toLowerCase().charAt(0);
+                DeleteRepositoryHandler deleteHandler = new DeleteRepositoryHandler() {
+                    public void handleDelete(String githubUser, String githubPassword, String repoName) throws IOException {
+                        service.deleteRepo(githubUser, githubPassword, repoName);
                     }
-                    if (userInput == 'y') {
-                        githubUtil.deleteRepo(githubUser, githubPassword, repoName);
-                    }
-                }
+                };
+                ConsoleManager.deleteRepositor(deleteHandler, githubUser, githubPassword, repoName);
             }
             else if ("fork".equals(method)) {
-                githubUtil.forkRepo(githubUser, githubPassword, repoName);
+
+                ConsoleManager.forkRepository(new ForkRepositoryHandler() {
+                    public void handleFork(String githubUser, String githubPassword, String repoName) throws IOException {
+                        service.forkRepo(githubUser, githubPassword, repoName);
+                    }
+                }, githubUser, githubPassword, repoName);
             }
             else {
-                githubUtil.printOctopuss();
-                System.out.println(" Did you mean :");
-                System.out.println("         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME");
-                System.out.println("         - gh fork REPO_NAME      : fork a repository from codjo");
-                System.out.println("         - gh delete REPO_NAME    : delete a repository if exists");
+                ConsoleManager.printHelp(OCTOPUS);
             }
-            githubUtil.printGithubQuotas();
+            ConsoleManager.printQuotas(service.getGitHubQuota());
+
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -162,12 +101,4 @@ public class GithubUtil {
     }
 
 
-    private void printOctopuss() {
-        String octopus = "\n\n"
-                         + "          ,---.           **********************************************\n"
-                         + "         ( @ @ )          *             Codjo Github Tool              *\n"
-                         + "          ).-.(           * a really cool command line tool for github *\n"
-                         + "         //|||\\\\          **********************************************\n";
-        System.out.println(octopus);
-    }
 }
