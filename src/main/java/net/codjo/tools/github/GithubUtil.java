@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.List;
-
 import org.eclipse.egit.github.core.Repository;
 
 /**
@@ -11,20 +10,19 @@ import org.eclipse.egit.github.core.Repository;
  */
 public class GithubUtil {
     public static final String OCTOPUS = "\n\n"
-            + "          ,---.           **********************************************\n"
-            + "         ( @ @ )          *             Codjo Github Tool              *\n"
-            + "          ).-.(           * a really cool command line tool for github *\n"
-            + "         //|||\\\\          **********************************************\n";
-
-
+                                         + "          ,---.           **********************************************\n"
+                                         + "         ( @ @ )          *             Codjo Github Tool              *\n"
+                                         + "          ).-.(           * a really cool command line tool for github *\n"
+                                         + "         //|||\\\\          **********************************************\n";
 
 
     private static void initProxyConfiguration() throws IOException {
-        System.out.println(OCTOPUS);
         try {
             GitConfigUtil configUtil = new GitConfigUtil();
             setProxyAuthentication(configUtil);
-        } catch (Exception e) {
+            System.out.println(OCTOPUS);
+        }
+        catch (Exception e) {
             System.out.println("There was a problem while loading proxy configuration in .gitconfig file");
             System.out.println(" \tPrxoxy configuration is ignored.");
         }
@@ -56,7 +54,12 @@ public class GithubUtil {
 
 
     public static void main(String[] args) {
-        final GithubUtilService service = new GithubUtilService();
+        GithubUtilService githubUtilService = new GithubUtilService();
+        new GithubUtil().localMain(githubUtilService, args);
+    }
+
+
+    public void localMain(final GithubUtilService service, String[] args) {
         try {
             String method = args[0];
             String githubUser = args[1];
@@ -67,7 +70,7 @@ public class GithubUtil {
             }
 
             initProxyConfiguration();
-            service.initGithubClient(githubUser,githubPassword);
+            service.initGithubClient(githubUser, githubPassword);
 
             if ("list".equals(method)) {
                 List<Repository> repoList = service.list(githubUser, githubPassword, repoName);
@@ -75,7 +78,8 @@ public class GithubUtil {
             }
             else if ("delete".equals(method)) {
                 DeleteRepositoryHandler deleteHandler = new DeleteRepositoryHandler() {
-                    public void handleDelete(String githubUser, String githubPassword, String repoName) throws IOException {
+                    public void handleDelete(String githubUser, String githubPassword, String repoName)
+                          throws IOException {
                         service.deleteRepo(githubUser, githubPassword, repoName);
                     }
                 };
@@ -84,21 +88,19 @@ public class GithubUtil {
             else if ("fork".equals(method)) {
 
                 ConsoleManager.forkRepository(new ForkRepositoryHandler() {
-                    public void handleFork(String githubUser, String githubPassword, String repoName) throws IOException {
+                    public void handleFork(String githubUser, String githubPassword, String repoName)
+                          throws IOException {
                         service.forkRepo(githubUser, githubPassword, repoName);
                     }
                 }, githubUser, githubPassword, repoName);
             }
             else {
-                ConsoleManager.printHelp(OCTOPUS);
+                ConsoleManager.printHelp();
             }
             ConsoleManager.printQuotas(service.getGitHubQuota());
-
         }
         catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
 }
