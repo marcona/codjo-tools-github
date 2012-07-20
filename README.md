@@ -7,6 +7,7 @@ Nested librairies are in lib directory. (github.core has been cutomized to get r
 
 TODO list :
 
+ - Improve unit tests (multiple case for delete ...etc)
  - DONE enhance console display
  - deal with external dependencies
      - avoid if possible external dependencies (actually use egit from eclipse)
