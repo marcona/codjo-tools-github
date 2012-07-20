@@ -10,6 +10,11 @@ import org.eclipse.egit.github.core.client.RequestException;
 
 public class ConsoleManager {
     final static SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+    static final String OCTOPUS = "\n\n"
+                                  + "          ,---.           **********************************************\n"
+                                  + "         ( @ @ )          *             Codjo Github Tool              *\n"
+                                  + "          ).-.(           * a really cool command line tool for github *\n"
+                                  + "         //|||\\\\          **********************************************\n";
 
 
     static void printRepositoryList(List<Repository> repoList, String githubUser) {
@@ -44,7 +49,7 @@ public class ConsoleManager {
                 try {
                     deleteHandler.handleDelete(githubUser, githubPassword, repoName);
                     System.out
-                          .println("\tRepository " + repoName + " has been removed from " + githubUser + " account");
+                          .println("\n\tRepository " + repoName + " has been removed from " + githubUser + " account");
                 }
                 catch (RequestException e) {
                     System.err.println("\tRepository " + repoName + " doesn't exist\n\n");
@@ -80,6 +85,11 @@ public class ConsoleManager {
         if (gitHubQuota != -1) {
             System.out.println("\n\n\tFor your information, you have " + gitHubQuota + " requests left");
         }
+    }
+
+
+    public static void printHeader() {
+        System.out.println(OCTOPUS);
     }
 }
 

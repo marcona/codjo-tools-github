@@ -7,13 +7,14 @@ Nested librairies are in lib directory. (github.core has been cutomized to get r
 
 TODO list :
 
- - enhance console display
+ - DONE enhance console display
  - deal with external dependencies
      - avoid if possible external dependencies (actually use egit from eclipse)
      - show the github quota
  - DONE refactoring (package codjo.tools)
  - DONE Avoid delete repo on codjo account
- - add unit tests ... i know its bad ;-)
+ - DONE add unit tests ... i know its bad ;-)
+ - cmd is not generic enough
  - add .cmd(DONE) and .ksh
  - avoid multiple if-else to select method
  - use netrc/_netrc by default
@@ -24,3 +25,10 @@ TODO list :
    - list actual opened pull requests for codjo-pom pull request ("include in release X.XX...")
  - Verify if a "chantier" is really opened (last commit) on codjo-sandbox
  - add interactive fork : "Wich codjo repository would you like to fork ?"
+ - enhance packaging
+ - yeald System.out redirection for unit-test in codjo-test ?
+ - Add search in pull request, or in code !
+
+ Packaging :
+  * mvn install
+  
