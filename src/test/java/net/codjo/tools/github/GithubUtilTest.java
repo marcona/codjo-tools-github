@@ -19,12 +19,14 @@ import static net.codjo.test.common.matcher.JUnitMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class GithubUtilTest {
+public class GithubUtilTest   {
+    private static final String endOfLine = System.getProperty("line.separator");
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     private GithubUtil githubUtil;
     private GithubUtilService mockGithubService;
     private LogString logString = new LogString();
+    private String proxyMessage;
 
 
     @Before
@@ -35,6 +37,12 @@ public class GithubUtilTest {
         //TODO Testing System.out could be yeald to codjo-test ?
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
+        GitConfigUtil gitConfigUtil = GithubUtil.tryToLoadProxyConfig();
+        if (gitConfigUtil==null || gitConfigUtil.getProxyHost()==null){
+            proxyMessage="";
+        }   else{
+            proxyMessage=GithubUtil.PROXY_CONFIG_MESSAGE;
+        }
     }
 
 
@@ -79,7 +87,7 @@ public class GithubUtilTest {
         githubUtil.localMain(mockGithubService, args);
         logString.assertContent(
               "initGithubClient(githubUser, githubPassword), forkRepo(githubUser, githubPassword, codjo-github-tools)");
-        assertThat(outContent.toString(), is(forkRepositoryInConsole("githubUser")));
+        assertThat(outContent.toString(), is(forkRepositoryInConsole()));
         assertNoError();
     }
 
@@ -87,7 +95,7 @@ public class GithubUtilTest {
     @Test
     public void test_deleteRepository() {
         String[] args = new String[]{"delete", "githubUser", "githubPassword", "codjo-github-tools"};
-        String data = "Yes\r\n";
+        String data = "Yes" + endOfLine ;
         InputStream stdin = System.in;
         try {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
@@ -95,6 +103,42 @@ public class GithubUtilTest {
             logString.assertContent(
                   "initGithubClient(githubUser, githubPassword), deleteRepo(githubUser, githubPassword, codjo-github-tools)");
             assertThat(outContent.toString(), is(deleteRepositoryInConsole("githubUser")));
+            assertNoError();
+        }
+        finally {
+            System.setIn(stdin);
+        }
+    }
+
+    @Test
+    public void test_deleteRepositoryCanceledByUser() {
+        String[] args = new String[]{"delete", "githubUser", "githubPassword", "codjo-github-tools"};
+        String data = "No" + endOfLine ;
+        InputStream stdin = System.in;
+        try {
+            System.setIn(new ByteArrayInputStream(data.getBytes()));
+            githubUtil.localMain(mockGithubService, args);
+            logString.assertContent(
+                  "initGithubClient(githubUser, githubPassword)");
+            assertThat(outContent.toString(), is(deleteRepositoryCanceledByUserInConsole()));
+            assertNoError();
+        }
+        finally {
+            System.setIn(stdin);
+        }
+    }
+
+    @Test
+    public void test_deleteWithCodjoAccount() {
+        String[] args = new String[]{"delete", "codjo", "githubPassword", "codjo-github-tools"};
+        String data = "Yes" + endOfLine ;
+        InputStream stdin = System.in;
+        try {
+            System.setIn(new ByteArrayInputStream(data.getBytes()));
+            githubUtil.localMain(mockGithubService, args);
+            logString.assertContent(
+                  "initGithubClient(codjo, githubPassword)");
+            assertThat(outContent.toString(), is(deleteRepositoryWithCodjoAccountInConsole()));
             assertNoError();
         }
         finally {
@@ -114,48 +158,66 @@ public class GithubUtilTest {
 
 
     private String helpInConsole(boolean wihtQuotas) {
-        String result = ConsoleManager.OCTOPUS + "\r\n" +
-                        " Did you mean :\r\n" +
-                        "         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME\r\n" +
-                        "         - gh fork REPO_NAME      : fork a repository from codjo\r\n" +
-                        "         - gh delete REPO_NAME    : delete a repository if exists\r\n";
+        String result = ConsoleManager.OCTOPUS +endOfLine
+                         +proxyMessage+
+                        " Did you mean :" +endOfLine +
+                        "         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME" +endOfLine +
+                        "         - gh fork REPO_NAME      : fork a repository from codjo" +endOfLine+
+                        "         - gh delete REPO_NAME    : delete a repository if exists"+endOfLine;
         if (wihtQuotas) {
             result += "\n"
                       + "\n"
-                      + "\tFor your information, you have 5 requests left\r\n";
+                      + "\tFor your information, you have 5 requests left" + endOfLine;
         }
         return result;
     }
 
 
     private String repositoryListInConsole(String githubUser) {
-        return ConsoleManager.OCTOPUS + "\r\n\n"
-               + "Here are the repositories from " + githubUser + "\r\n"
-               + "\tLast push\t\t\t\tName\r\n"
-               + "\t19/07/2012 00:00\t\tcodjo-repoOne\r\n"
-               + "\t05/07/2012 00:00\t\tcodjo-repoTwo\r\n"
+        return ConsoleManager.OCTOPUS + endOfLine+"\n"
+               + "Here are the repositories from " + githubUser + endOfLine
+               + "\tLast push\t\t\t\tName"+endOfLine
+               + "\t19/07/2012 00:00\t\tcodjo-repoOne"+endOfLine
+               + "\t05/07/2012 00:00\t\tcodjo-repoTwo"+endOfLine
                + "\n"
                + "\n"
-               + "\tFor your information, you have 5 requests left\r\n";
+               + "\tFor your information, you have 5 requests left"+endOfLine;
     }
 
 
-    private String forkRepositoryInConsole(String githubUser) {
-        return ConsoleManager.OCTOPUS + "\r\n"
-               + "\tRepository codjo-github-tools has been forked from codjo.\r\n"
+    private String forkRepositoryInConsole() {
+        return ConsoleManager.OCTOPUS + "" + endOfLine
+               + "\tRepository codjo-github-tools has been forked from codjo." + endOfLine
                + "\n"
                + "\n"
-               + "\tFor your information, you have 5 requests left\r\n";
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
 
 
     private String deleteRepositoryInConsole(String githubUser) {
-        return ConsoleManager.OCTOPUS + "\r\n"
+        return ConsoleManager.OCTOPUS + "" + endOfLine
                + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : \n"
-               + "\tRepository codjo-github-tools has been removed from githubUser account\r\n"
+               + "\tRepository codjo-github-tools has been removed from "+githubUser+" account" + endOfLine
                + "\n"
                + "\n"
-               + "\tFor your information, you have 5 requests left\r\n";
+               + "\tFor your information, you have 5 requests left" + endOfLine ;
+    }
+
+    private String deleteRepositoryCanceledByUserInConsole() {
+        return ConsoleManager.OCTOPUS + "" + endOfLine
+               + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : "
+               + "\n"
+               + "\n"
+               + "\tFor your information, you have 5 requests left" + endOfLine ;
+    }
+
+    private String deleteRepositoryWithCodjoAccountInConsole() {
+        return ConsoleManager.OCTOPUS + "" + endOfLine
+                + "\tRepositoy deletion with codjo account is not allowed.\n"
+                +"\t--> Please, use web interface instead."+endOfLine
+               + "\n"
+               + "\n"
+               + "\tFor your information, you have 5 requests left" + endOfLine ;
     }
 
 

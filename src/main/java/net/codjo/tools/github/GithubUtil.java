@@ -9,15 +9,25 @@ import org.eclipse.egit.github.core.Repository;
  *
  */
 public class GithubUtil {
+    static final String PROXY_CONFIG_MESSAGE = "There was a problem while loading proxy configuration in .gitconfig file\n"
+            + " \tProxy configuration is ignored.";
 
     private static void initProxyConfiguration() throws IOException {
-        try {
-            GitConfigUtil configUtil = new GitConfigUtil();
-            setProxyAuthentication(configUtil);
+        GitConfigUtil configUtil = tryToLoadProxyConfig();
+        if (configUtil != null) {
+            if (configUtil.getProxyHost()!=null){
+               setProxyAuthentication(configUtil);
+            }
+        } else {
+            System.out.println(PROXY_CONFIG_MESSAGE);
         }
-        catch (Exception e) {
-            System.out.println("There was a problem while loading proxy configuration in .gitconfig file");
-            System.out.println(" \tPrxoxy configuration is ignored.");
+    }
+
+    static GitConfigUtil tryToLoadProxyConfig() {
+        try {
+            return new GitConfigUtil();
+        } catch (Exception e) {
+            return null;
         }
     }
 
