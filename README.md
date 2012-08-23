@@ -49,6 +49,9 @@ Here are the repositories from marcona
 
 TODO list :
 -----------
+ - deal with external dependencies
+     - avoid if possible external dependencies (actually use egit from eclipse)
+     - mvn install doen't work because of egit dependency
  - Improve unit tests
       - DONE multiple case for repository deletion
       - commonalize console messages between production code and tests ?
@@ -56,15 +59,13 @@ TODO list :
       - DONE proxy trace if outside corporate proxy
       - DONE end of line in console are different between os
  - DONE enhance console display
- - deal with external dependencies
-     - avoid if possible external dependencies (actually use egit from eclipse)
  - DONE show the github quota
  - DONE refactoring (package codjo.tools)
  - DONE Avoid delete repo on codjo account
  - DONE add unit tests ... i know its bad ;-)
  - cmd is not generic enough
  - add .cmd(DONE) and .ksh in resource
- - avoid multiple if-else to select method
+ - DONE (but not perfect) avoid multiple if-else to select method
  - use netrc/_netrc by default
  - allow more options (skip proxy, use of _netrc file)
  - error management for program arguments
@@ -81,5 +82,6 @@ TODO list :
  Packaging :
 -----------
 
-  * mvn install and copy nested artifacts in the right place (precise , isn't it)
+  * mvn clean install and copy nested artifacts in the right place (precise , isn't it)
+   e.g in a deploy directory copy codjo-tools-github.jar and the ./lib directory
   
