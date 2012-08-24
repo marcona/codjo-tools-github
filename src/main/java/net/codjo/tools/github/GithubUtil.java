@@ -1,32 +1,44 @@
 package net.codjo.tools.github;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
+import java.util.LinkedList;
 import java.util.List;
+import jline.console.ConsoleReader;
+import jline.console.completer.ArgumentCompleter;
+import jline.console.completer.Completer;
+import jline.console.completer.NullCompleter;
+import jline.console.completer.StringsCompleter;
 import org.eclipse.egit.github.core.Repository;
 
 /**
  *
  */
 public class GithubUtil {
-    static final String PROXY_CONFIG_MESSAGE = "There was a problem while loading proxy configuration in .gitconfig file\n"
-            + " \tProxy configuration is ignored.";
+    static final String PROXY_CONFIG_MESSAGE =
+          "There was a problem while loading proxy configuration in .gitconfig file\n"
+          + " \tProxy configuration is ignored.";
+
 
     private static void initProxyConfiguration() throws IOException {
         GitConfigUtil configUtil = tryToLoadProxyConfig();
         if (configUtil != null) {
-            if (configUtil.getProxyHost()!=null){
-               setProxyAuthentication(configUtil);
+            if (configUtil.getProxyHost() != null) {
+                setProxyAuthentication(configUtil);
             }
-        } else {
+        }
+        else {
             System.out.println(PROXY_CONFIG_MESSAGE);
         }
     }
 
+
     static GitConfigUtil tryToLoadProxyConfig() {
         try {
             return new GitConfigUtil();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
     }
@@ -99,6 +111,9 @@ public class GithubUtil {
                         }
                     }, githubUser, githubPassword, repoName);
                 }
+                else if ("interactive".equals(method)) {
+                    testIntercativeWithJline();
+                }
                 else {
                     ConsoleManager.printHelp();
                 }
@@ -110,6 +125,37 @@ public class GithubUtil {
         }
         catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    private void testIntercativeWithJline() throws IOException {
+        ConsoleReader reader = new ConsoleReader();
+        reader.setPrompt("codjo-github-tools> ");
+
+        List<Completer> completors = new LinkedList<Completer>();
+        StringsCompleter functionCompleter = new StringsCompleter("list", "fork", "delete");
+        StringsCompleter completer = new StringsCompleter("codjo-util", "codjo-variable", "codjo-test");
+        StringsCompleter completer1 = new StringsCompleter("codjo", "codjo-sandbox", "marcona");
+        completors.add(new ArgumentCompleter(functionCompleter, completer, completer1));
+
+        for (Completer c : completors) {
+            reader.addCompleter(new NullCompleter());
+            reader.addCompleter(c);
+        }
+
+        String line;
+        PrintWriter out = new PrintWriter(reader.getOutput());
+
+        while ((line = reader.readLine()) != null) {
+            out.println("======>\"" + line + "\"");
+            out.flush();
+
+            // If we input the special word then we will mask
+            // the next line.
+            if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
+                break;
+            }
         }
     }
 }

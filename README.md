@@ -73,10 +73,15 @@ TODO list :
    - list actual opened pull requests for codjo-pom pull request ("include in release X.XX...")
  - Verify if a "chantier" is really opened (last commit) on codjo-sandbox
  - add interactive fork : "Wich codjo repository would you like to fork ?"
+    see : http://sourceforge.net/projects/javacurses/
+          Java-Readline or jline2.
+          http://cliche.sourceforge.net/?f=manual
  - enhance packaging
  - yeald System.out redirection for unit-test in codjo-test ?
  - Add search in pull request, or in code !
  - automatic download of last version: is it possible to use github to download last artifact, of course ;-)
+ - Enhance console help (wich account is used)
+ - accept name without codjo prefix ? e.g. ```gh fork imports``` instead of ```gh fork codjo-imports```
 
  Packaging :
 -----------

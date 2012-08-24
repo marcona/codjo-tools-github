@@ -19,7 +19,7 @@ import static net.codjo.test.common.matcher.JUnitMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class GithubUtilTest   {
+public class GithubUtilTest {
     private static final String endOfLine = System.getProperty("line.separator");
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
@@ -38,10 +38,11 @@ public class GithubUtilTest   {
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
         GitConfigUtil gitConfigUtil = GithubUtil.tryToLoadProxyConfig();
-        if (gitConfigUtil==null || gitConfigUtil.getProxyHost()==null){
-            proxyMessage="";
-        }   else{
-            proxyMessage=GithubUtil.PROXY_CONFIG_MESSAGE;
+        if (gitConfigUtil == null || gitConfigUtil.getProxyHost() == null) {
+            proxyMessage = "";
+        }
+        else {
+            proxyMessage = GithubUtil.PROXY_CONFIG_MESSAGE;
         }
     }
 
@@ -95,7 +96,7 @@ public class GithubUtilTest   {
     @Test
     public void test_deleteRepository() {
         String[] args = new String[]{"delete", "githubUser", "githubPassword", "codjo-github-tools"};
-        String data = "Yes" + endOfLine ;
+        String data = "Yes" + endOfLine;
         InputStream stdin = System.in;
         try {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
@@ -110,10 +111,11 @@ public class GithubUtilTest   {
         }
     }
 
+
     @Test
     public void test_deleteRepositoryCanceledByUser() {
         String[] args = new String[]{"delete", "githubUser", "githubPassword", "codjo-github-tools"};
-        String data = "No" + endOfLine ;
+        String data = "No" + endOfLine;
         InputStream stdin = System.in;
         try {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
@@ -128,10 +130,11 @@ public class GithubUtilTest   {
         }
     }
 
+
     @Test
     public void test_deleteWithCodjoAccount() {
         String[] args = new String[]{"delete", "codjo", "githubPassword", "codjo-github-tools"};
-        String data = "Yes" + endOfLine ;
+        String data = "Yes" + endOfLine;
         InputStream stdin = System.in;
         try {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
@@ -148,8 +151,7 @@ public class GithubUtilTest   {
 
 
     @Test
-    public void test_noParameterPrintsHelp
-          () {
+    public void test_noParameterPrintsHelp() {
         String[] args = new String[]{};
         githubUtil.localMain(mockGithubService, args);
         assertEquals(helpInConsole(false), outContent.toString());
@@ -158,12 +160,12 @@ public class GithubUtilTest   {
 
 
     private String helpInConsole(boolean wihtQuotas) {
-        String result = ConsoleManager.OCTOPUS +endOfLine
-                         +proxyMessage+
-                        " Did you mean :" +endOfLine +
-                        "         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME" +endOfLine +
-                        "         - gh fork REPO_NAME      : fork a repository from codjo" +endOfLine+
-                        "         - gh delete REPO_NAME    : delete a repository if exists"+endOfLine;
+        String result = ConsoleManager.OCTOPUS + endOfLine
+                        + proxyMessage +
+                        " Did you mean :" + endOfLine +
+                        "         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME" + endOfLine +
+                        "         - gh fork REPO_NAME      : fork a repository from codjo" + endOfLine +
+                        "         - gh delete REPO_NAME    : delete a repository if exists" + endOfLine;
         if (wihtQuotas) {
             result += "\n"
                       + "\n"
@@ -174,14 +176,14 @@ public class GithubUtilTest   {
 
 
     private String repositoryListInConsole(String githubUser) {
-        return ConsoleManager.OCTOPUS + endOfLine+"\n"
+        return ConsoleManager.OCTOPUS + endOfLine + "\n"
                + "Here are the repositories from " + githubUser + endOfLine
-               + "\tLast push\t\t\t\tName"+endOfLine
-               + "\t19/07/2012 00:00\t\tcodjo-repoOne"+endOfLine
-               + "\t05/07/2012 00:00\t\tcodjo-repoTwo"+endOfLine
+               + "\tLast push\t\t\t\tName" + endOfLine
+               + "\t19/07/2012 00:00\t\tcodjo-repoOne" + endOfLine
+               + "\t05/07/2012 00:00\t\tcodjo-repoTwo" + endOfLine
                + "\n"
                + "\n"
-               + "\tFor your information, you have 5 requests left"+endOfLine;
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
 
 
@@ -197,27 +199,29 @@ public class GithubUtilTest   {
     private String deleteRepositoryInConsole(String githubUser) {
         return ConsoleManager.OCTOPUS + "" + endOfLine
                + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : \n"
-               + "\tRepository codjo-github-tools has been removed from "+githubUser+" account" + endOfLine
+               + "\tRepository codjo-github-tools has been removed from " + githubUser + " account" + endOfLine
                + "\n"
                + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine ;
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
+
 
     private String deleteRepositoryCanceledByUserInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
                + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : "
                + "\n"
                + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine ;
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
+
 
     private String deleteRepositoryWithCodjoAccountInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-                + "\tRepositoy deletion with codjo account is not allowed.\n"
-                +"\t--> Please, use web interface instead."+endOfLine
+               + "\tRepositoy deletion with codjo account is not allowed.\n"
+               + "\t--> Please, use web interface instead." + endOfLine
                + "\n"
                + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine ;
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
 
 
