@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import jline.console.ConsoleReader;
@@ -76,6 +77,11 @@ public class GithubUtil {
 
     public void localMain(final GithubUtilService service, String[] args) {
         ConsoleManager.printHeader();
+        doIt(service, args);
+    }
+
+
+    private void doIt(final GithubUtilService service, String[] args) {
         try {
             if (args.length == 3 || args.length == 4) {
                 String method = args[0];
@@ -112,7 +118,7 @@ public class GithubUtil {
                     }, githubUser, githubPassword, repoName);
                 }
                 else if ("interactive".equals(method)) {
-                    testIntercativeWithJline();
+                    testInteractiveWithJline(service, githubUser, githubPassword);
                 }
                 else {
                     ConsoleManager.printHelp();
@@ -129,15 +135,20 @@ public class GithubUtil {
     }
 
 
-    private void testIntercativeWithJline() throws IOException {
+    private void testInteractiveWithJline(GithubUtilService service, String githubUser, String githubPassword)
+          throws IOException {
         ConsoleReader reader = new ConsoleReader();
         reader.setPrompt("codjo-github-tools> ");
 
         List<Completer> completors = new LinkedList<Completer>();
+
         StringsCompleter functionCompleter = new StringsCompleter("list", "fork", "delete");
-        StringsCompleter completer = new StringsCompleter("codjo-util", "codjo-variable", "codjo-test");
-        StringsCompleter completer1 = new StringsCompleter("codjo", "codjo-sandbox", "marcona");
-        completors.add(new ArgumentCompleter(functionCompleter, completer, completer1));
+
+        StringsCompleter repositoryCompleter = new StringsCompleter("codjo-util", "codjo-variable", "codjo-test");
+
+        StringsCompleter accountCompleter = new StringsCompleter("codjo", "codjo-sandbox", "marcona");
+
+        completors.add(new ArgumentCompleter(functionCompleter, repositoryCompleter, accountCompleter));
 
         for (Completer c : completors) {
             reader.addCompleter(new NullCompleter());
@@ -151,10 +162,23 @@ public class GithubUtil {
             out.println("======>\"" + line + "\"");
             out.flush();
 
-            // If we input the special word then we will mask
-            // the next line.
-            if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
+            // If we input the special word then we will mask the next line.
+            if ("quit".equalsIgnoreCase(line) || "exit".equalsIgnoreCase(line)) {
                 break;
+            }
+            if (!"".equals(line.trim())) {
+                String[] split = line.split("\\s");
+                List<String> arguments = new ArrayList<String>();
+                //TODO deal with interactive as we're already in interactive mode
+                arguments.add(split[0]);//method
+                arguments.add(githubUser);//user
+                arguments.add(githubPassword);//pwd
+                for (int i = 1; i < split.length; i++) {//other args
+                    arguments.add(split[i]);
+                }
+
+                String[] args = arguments.toArray(new String[arguments.size()]);
+                doIt(service, args);
             }
         }
     }

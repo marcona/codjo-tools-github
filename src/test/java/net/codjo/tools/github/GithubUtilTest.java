@@ -38,7 +38,7 @@ public class GithubUtilTest {
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
         GitConfigUtil gitConfigUtil = GithubUtil.tryToLoadProxyConfig();
-        if (gitConfigUtil == null || gitConfigUtil.getProxyHost() == null) {
+        if (gitConfigUtil == null || gitConfigUtil.getProxyHost() != null) {
             proxyMessage = "";
         }
         else {
@@ -217,7 +217,7 @@ public class GithubUtilTest {
 
     private String deleteRepositoryWithCodjoAccountInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-               + "\tRepositoy deletion with codjo account is not allowed.\n"
+               + "\tRepositoy deletion with codjo account is not allowed." + endOfLine
                + "\t--> Please, use web interface instead." + endOfLine
                + "\n"
                + "\n"
