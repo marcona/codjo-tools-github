@@ -99,5 +99,6 @@ Priority later
  Packaging :
 -----------
 
-  * mvn install and copy nested artifacts in the right place (precise , isn't it)
+  * mvn clean install and copy nested artifacts in the right place (precise , isn't it)
+   e.g in a deploy directory copy codjo-tools-github.jar and the ./lib directory
   

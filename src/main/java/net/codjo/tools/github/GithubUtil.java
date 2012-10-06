@@ -2,6 +2,7 @@ package net.codjo.tools.github;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.egit.github.core.Repository;
 
@@ -11,6 +12,18 @@ import org.eclipse.egit.github.core.Repository;
 public class GithubUtil {
     static final String PROXY_CONFIG_MESSAGE = "There was a problem while loading proxy configuration in .gitconfig file\n"
             + " \tProxy configuration is ignored.";
+    private final List<GitHubCommand> commands = new ArrayList<GitHubCommand>();
+
+    public GithubUtil() {
+        initCommands();
+    }
+
+    private void initCommands() {
+        commands.add(new ListRepositoryCommand());
+        commands.add(new ForkRepositoryCommand());
+        commands.add(new DeleteRepositoryCommand());
+        commands.add(new HelpCommand());
+    }
 
     private static void initProxyConfiguration() throws IOException {
         GitConfigUtil configUtil = tryToLoadProxyConfig();
@@ -77,30 +90,8 @@ public class GithubUtil {
                 initProxyConfiguration();
                 service.initGithubClient(githubUser, githubPassword);
 
-                if ("list".equals(method)) {
-                    List<Repository> repoList = service.list(githubUser, githubPassword, repoName);
-                    ConsoleManager.printRepositoryList(repoList, githubUser);
-                }
-                else if ("delete".equals(method)) {
-                    DeleteRepositoryHandler deleteHandler = new DeleteRepositoryHandler() {
-                        public void handleDelete(String githubUser, String githubPassword, String repoName)
-                              throws IOException {
-                            service.deleteRepo(githubUser, githubPassword, repoName);
-                        }
-                    };
-                    ConsoleManager.deleteRepositor(deleteHandler, githubUser, githubPassword, repoName);
-                }
-                else if ("fork".equals(method)) {
-
-                    ConsoleManager.forkRepository(new ForkRepositoryHandler() {
-                        public void handleFork(String githubUser, String githubPassword, String repoName)
-                              throws IOException {
-                            service.forkRepo(githubUser, githubPassword, repoName);
-                        }
-                    }, githubUser, githubPassword, repoName);
-                }
-                else {
-                    ConsoleManager.printHelp();
+                for (GitHubCommand command : commands) {
+                    command.doCommand(service,method,githubUser,githubPassword,repoName);
                 }
                 ConsoleManager.printQuotas(service.getGitHubQuota());
             }
@@ -110,6 +101,54 @@ public class GithubUtil {
         }
         catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static class DeleteRepositoryCommand implements GitHubCommand {
+
+        public void doCommand(final GithubUtilService service, String method, String githubUser, String githubPassword, String repoName) throws IOException {
+            if ("delete".equals(method)) {
+                DeleteRepositoryHandler deleteHandler = new DeleteRepositoryHandler() {
+                    public void handleDelete(String githubUser, String githubPassword, String repoName)
+                            throws IOException {
+                        service.deleteRepo(githubUser, githubPassword, repoName);
+                    }
+                };
+                ConsoleManager.deleteRepositor(deleteHandler, githubUser, githubPassword, repoName);
+            }
+        }
+    }
+
+    private static class ListRepositoryCommand implements GitHubCommand {
+
+        public void doCommand(final GithubUtilService service, String method, String githubUser, String githubPassword, String repoName) throws IOException {
+            if ("list".equals(method)) {
+                List<Repository> repoList = service.list(githubUser, githubPassword, repoName);
+                ConsoleManager.printRepositoryList(repoList, githubUser);
+            }
+        }
+    }
+
+    private static class ForkRepositoryCommand implements GitHubCommand {
+
+        public void doCommand(final GithubUtilService service, String method, String githubUser, String githubPassword, String repoName) throws IOException {
+            if ("fork".equals(method)) {
+                ConsoleManager.forkRepository(new ForkRepositoryHandler() {
+                    public void handleFork(String githubUser, String githubPassword, String repoName)
+                            throws IOException {
+                        service.forkRepo(githubUser, githubPassword, repoName);
+                    }
+                }, githubUser, githubPassword, repoName);
+            }
+        }
+    }
+
+    private static class HelpCommand implements GitHubCommand {
+
+        public void doCommand(final GithubUtilService service, String method, String githubUser, String githubPassword, String repoName) throws IOException {
+            if (!"fork".equals(method) && !"delete".equals(method) && !"list".equals(method)){
+                ConsoleManager.printHelp();
+            }
         }
     }
 }
