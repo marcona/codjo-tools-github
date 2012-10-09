@@ -1,5 +1,8 @@
 package net.codjo.tools.github;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryId;
@@ -7,26 +10,21 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_REPOS;
 
 /**
- * Created with IntelliJ IDEA.
- * User: marcona
- * Date: 20/07/12
- * Time: 09:02
- * To change this template use File | Settings | File Templates.
+ * Created with IntelliJ IDEA. User: marcona Date: 20/07/12 Time: 09:02 To change this template use File | Settings |
+ * File Templates.
  */
 public class GithubUtilService {
     private GitHubClient client = new GitHubClient();
+
 
     public GitHubClient initGithubClient(String githubUser, String githubPassword) {
         client.setCredentials(githubUser, githubPassword);
         return client;
     }
+
 
     public void forkRepo(String githubUser, String githubPassword, String repoName) throws IOException {
         client = initGithubClient(githubUser, githubPassword);
@@ -49,18 +47,17 @@ public class GithubUtilService {
     public List<Repository> list(String githubUser, String githubPassword, String repoName) throws IOException {
         client = initGithubClient(githubUser, githubPassword);
         return getRepositoryList(githubUser, repoName, client);
-
-
     }
 
 
-    public List<PullRequest> listOpenedPullRequest(String githubUser, String githubPassword, String repoName) throws IOException {
+    public List<PullRequest> eventsSinceLastRelease(String githubUser,
+                                                    String githubPassword,
+                                                    String repoName) throws IOException {
         List<PullRequest> resulList = new ArrayList<PullRequest>();
 
 //        initGithubClient(githubUser, githubPassword);
 
-
-        List<Repository> repositories = getRepositoryList(githubUser,repoName, client);
+        List<Repository> repositories = getRepositoryList(githubUser, repoName, client);
 
         PullRequestService pullRequestService = new PullRequestService(client);
         for (Repository repository : repositories) {
@@ -71,7 +68,9 @@ public class GithubUtilService {
         return resulList;
     }
 
-    private List<Repository> getRepositoryList(String githubUser, String repoName, GitHubClient gitHubClient) throws IOException {
+
+    private List<Repository> getRepositoryList(String githubUser, String repoName, GitHubClient gitHubClient)
+          throws IOException {
         RepositoryService repositoryService = new RepositoryService(gitHubClient);
         if (repoName != null && !repoName.trim().isEmpty()) {
             return repositoryService.getRepositories(repoName);

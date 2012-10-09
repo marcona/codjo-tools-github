@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import net.codjo.test.common.LogString;
 import net.codjo.util.date.DateUtil;
 import org.eclipse.egit.github.core.PullRequest;
@@ -41,9 +40,10 @@ public class GithubUtilTest {
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
         GitConfigUtil gitConfigUtil = GithubUtil.tryToLoadProxyConfig();
-        if (gitConfigUtil == null || gitConfigUtil.getProxyHost() == null) {
+        if (gitConfigUtil == null || gitConfigUtil.getProxyHost() != null) {
             proxyMessage = "";
-        } else {
+        }
+        else {
             proxyMessage = GithubUtil.PROXY_CONFIG_MESSAGE;
         }
     }
@@ -89,7 +89,7 @@ public class GithubUtilTest {
         String[] args = new String[]{"fork", "githubUser", "githubPassword", "codjo-github-tools"};
         githubUtil.localMain(mockGithubService, args);
         logString.assertContent(
-                "initGithubClient(githubUser, githubPassword), forkRepo(githubUser, githubPassword, codjo-github-tools)");
+              "initGithubClient(githubUser, githubPassword), forkRepo(githubUser, githubPassword, codjo-github-tools)");
         assertThat(outContent.toString(), is(forkRepositoryInConsole()));
         assertNoError();
     }
@@ -104,13 +104,15 @@ public class GithubUtilTest {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
             githubUtil.localMain(mockGithubService, args);
             logString.assertContent(
-                    "initGithubClient(githubUser, githubPassword), deleteRepo(githubUser, githubPassword, codjo-github-tools)");
+                  "initGithubClient(githubUser, githubPassword), deleteRepo(githubUser, githubPassword, codjo-github-tools)");
             assertThat(outContent.toString(), is(deleteRepositoryInConsole("githubUser")));
             assertNoError();
-        } finally {
+        }
+        finally {
             System.setIn(stdin);
         }
     }
+
 
     @Test
     public void test_deleteRepositoryCanceledByUser() {
@@ -121,13 +123,15 @@ public class GithubUtilTest {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
             githubUtil.localMain(mockGithubService, args);
             logString.assertContent(
-                    "initGithubClient(githubUser, githubPassword)");
+                  "initGithubClient(githubUser, githubPassword)");
             assertThat(outContent.toString(), is(deleteRepositoryCanceledByUserInConsole()));
             assertNoError();
-        } finally {
+        }
+        finally {
             System.setIn(stdin);
         }
     }
+
 
     @Test
     public void test_deleteWithCodjoAccount() {
@@ -138,10 +142,11 @@ public class GithubUtilTest {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
             githubUtil.localMain(mockGithubService, args);
             logString.assertContent(
-                    "initGithubClient(codjo, githubPassword)");
+                  "initGithubClient(codjo, githubPassword)");
             assertThat(outContent.toString(), is(deleteRepositoryWithCodjoAccountInConsole()));
             assertNoError();
-        } finally {
+        }
+        finally {
             System.setIn(stdin);
         }
     }
@@ -149,16 +154,17 @@ public class GithubUtilTest {
 
     @Test
     public void test_noParameterPrintsHelp
-            () {
+          () {
         String[] args = new String[]{};
         githubUtil.localMain(mockGithubService, args);
         assertEquals(helpInConsole(false), outContent.toString());
         assertNoError();
     }
 
+
     @Test
     public void test_listOpenedPullRequest() {
-        String[] args = new String[]{"pull-requests", "codjo", "githubPassword"};
+        String[] args = new String[]{"events", "codjo", "githubPassword"};
         githubUtil.localMain(mockGithubService, args);
         logString.assertContent("initGithubClient(codjo, githubPassword)");
         assertThat(outContent.toString(), is(listOpenedPullRequestWithCodjoAccountInConsole()));
@@ -168,15 +174,18 @@ public class GithubUtilTest {
 
     private String helpInConsole(boolean wihtQuotas) {
         String result = ConsoleManager.OCTOPUS + endOfLine
-                + proxyMessage +
-                " Did you mean :" + endOfLine +
-                "         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME" + endOfLine +
-                "         - gh fork REPO_NAME      : fork a repository from codjo" + endOfLine +
-                "         - gh delete REPO_NAME    : delete a repository if exists" + endOfLine;
+                        + proxyMessage +
+                        " Did you mean :" + endOfLine +
+                        "         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME" + endOfLine +
+                        "         - gh fork REPO_NAME      : fork a repository from codjo" + endOfLine +
+                        "         - gh delete REPO_NAME    : delete a repository if exists" + endOfLine +
+                        "         - gh events [ACCOUNT_NAME] [ACCOUNT_PASSWORD]    : list all events since last stabilisation (last pull request with 'For Release' title"
+                        + endOfLine;
+
         if (wihtQuotas) {
             result += "\n"
-                    + "\n"
-                    + "\tFor your information, you have 5 requests left" + endOfLine;
+                      + "\n"
+                      + "\tFor your information, you have 5 requests left" + endOfLine;
         }
         return result;
     }
@@ -184,62 +193,66 @@ public class GithubUtilTest {
 
     private String repositoryListInConsole(String githubUser) {
         return ConsoleManager.OCTOPUS + endOfLine + "\n"
-                + "Here are the repositories from " + githubUser + endOfLine
-                + "\tLast push\t\t\t\tName" + endOfLine
-                + "\t19/07/2012 00:00\t\tcodjo-repoOne" + endOfLine
-                + "\t05/07/2012 00:00\t\tcodjo-repoTwo" + endOfLine
-                + "\n"
-                + "\n"
-                + "\tFor your information, you have 5 requests left" + endOfLine;
+               + "Here are the repositories from " + githubUser + endOfLine
+               + "\tLast push\t\t\t\tName" + endOfLine
+               + "\t19/07/2012 00:00\t\tcodjo-repoOne" + endOfLine
+               + "\t05/07/2012 00:00\t\tcodjo-repoTwo" + endOfLine
+               + "\n"
+               + "\n"
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
 
 
     private String forkRepositoryInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-                + "\tRepository codjo-github-tools has been forked from codjo." + endOfLine
-                + "\n"
-                + "\n"
-                + "\tFor your information, you have 5 requests left" + endOfLine;
+               + "\tRepository codjo-github-tools has been forked from codjo." + endOfLine
+               + "\n"
+               + "\n"
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
 
 
     private String deleteRepositoryInConsole(String githubUser) {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-                + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : \n"
-                + "\tRepository codjo-github-tools has been removed from " + githubUser + " account" + endOfLine
-                + "\n"
-                + "\n"
-                + "\tFor your information, you have 5 requests left" + endOfLine;
+               + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : \n"
+               + "\tRepository codjo-github-tools has been removed from " + githubUser + " account" + endOfLine
+               + "\n"
+               + "\n"
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
+
 
     private String deleteRepositoryCanceledByUserInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-                + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : "
-                + "\n"
-                + "\n"
-                + "\tFor your information, you have 5 requests left" + endOfLine;
+               + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : "
+               + "\n"
+               + "\n"
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
+
 
     private String deleteRepositoryWithCodjoAccountInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-                + "\tRepositoy deletion with codjo account is not allowed.\n"
-                + "\t--> Please, use web interface instead." + endOfLine
-                + "\n"
-                + "\n"
-                + "\tFor your information, you have 5 requests left" + endOfLine;
+               + "\tRepositoy deletion with codjo account is not allowed." + endOfLine
+               + "\t--> Please, use web interface instead." + endOfLine
+               + "\n"
+               + "\n"
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
 
 
     private String listOpenedPullRequestWithCodjoAccountInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-                + "\tOpened pull requests from codjo :\n"
-                + "\tRepo\t\t\t\tTitle\t\t\t\tDate\t\t\t\tUrl\n"
-                + "\trepo1\t\tfirst pullRequest\t\t12/12/2010 00:00\t\thttp://urlr/pullRequest/1 " + endOfLine
-                + "\trepository2\t\tSecond pullRequest\t\t01/12/2010 00:00\t\thttp://urlr/pullRequest/2/other " + endOfLine
-                + "\n"
-                + "\n"
-                + "\tFor your information, you have 5 requests left" + endOfLine;
+               + "\tOpened pull requests from codjo :" + endOfLine
+               + "\tRepo\t\t\t\tTitle\t\t\t\tDate\t\t\t\tUrl" + endOfLine
+               + "\trepo1\t\tfirst pullRequest\t\t12/12/2010 00:00\t\thttp://urlr/pullRequest/1" + endOfLine
+               + "\trepository2\t\tSecond pullRequest\t\t01/12/2010 00:00\t\thttp://urlr/pullRequest/2/other "
+               + endOfLine
+               + "\n"
+               + "\n"
+               + "\tFor your information, you have 5 requests left" + endOfLine;
     }
+
 
     private void assertNoError() {
         assertEquals("", errContent.toString());
@@ -288,8 +301,11 @@ public class GithubUtilTest {
                 return list;
             }
 
+
             @Override
-            public List<PullRequest> listOpenedPullRequest(String githubUser, String githubPassword, String repoName) throws IOException {
+            public List<PullRequest> eventsSinceLastRelease(String githubUser,
+                                                            String githubPassword,
+                                                            String repoName) throws IOException {
                 List<PullRequest> list = new ArrayList<PullRequest>();
                 PullRequest repoOne = new PullRequest();
                 repoOne.setTitle("first pullRequest");
@@ -306,6 +322,7 @@ public class GithubUtilTest {
                 list.add(repoTwo);
                 return list;
             }
+
 
             private PullRequestMarker setPullRequestRepoName(String repoName) {
                 PullRequestMarker base = new PullRequestMarker();
