@@ -19,13 +19,20 @@
         <dependency>
             <groupId>net.codjo.util</groupId>
             <artifactId>codjo-util</artifactId>
+            <version>1.11</version>
         </dependency>
 
-        <!-- github core api -->
+        <!-- github core api
         <dependency>
             <groupId>org.eclipse.mylyn.github</groupId>
             <artifactId>org.eclipse.egit.github.core</artifactId>
             <version>2.0.4</version>
+        </dependency>
+              -->
+        <dependency>
+            <groupId>org.eclipse.mylyn.github</groupId>
+            <artifactId>org.eclipse.egit.github.core</artifactId>
+            <version>2.0.1</version>
         </dependency>
 
         <dependency>
