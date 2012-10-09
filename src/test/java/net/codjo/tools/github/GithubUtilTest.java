@@ -10,9 +10,11 @@ import java.util.List;
 import net.codjo.test.common.LogString;
 import net.codjo.util.date.DateUtil;
 import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.event.Event;
+import org.eclipse.egit.github.core.event.PullRequestPayload;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -167,7 +169,7 @@ public class GithubUtilTest {
         String[] args = new String[]{"events", "codjo", "githubPassword"};
         githubUtil.localMain(mockGithubService, args);
         logString.assertContent("initGithubClient(codjo, githubPassword)");
-        assertThat(outContent.toString(), is(listOpenedPullRequestWithCodjoAccountInConsole()));
+        assertThat(outContent.toString(), is(listEventsSinceLastStabilisationInConsole()));
         assertNoError();
     }
 
@@ -183,9 +185,7 @@ public class GithubUtilTest {
                         + endOfLine;
 
         if (wihtQuotas) {
-            result += "\n"
-                      + "\n"
-                      + "\tFor your information, you have 5 requests left" + endOfLine;
+            result += printApiQuota();
         }
         return result;
     }
@@ -197,18 +197,14 @@ public class GithubUtilTest {
                + "\tLast push\t\t\t\tName" + endOfLine
                + "\t19/07/2012 00:00\t\tcodjo-repoOne" + endOfLine
                + "\t05/07/2012 00:00\t\tcodjo-repoTwo" + endOfLine
-               + "\n"
-               + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine;
+               + printApiQuota();
     }
 
 
     private String forkRepositoryInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
                + "\tRepository codjo-github-tools has been forked from codjo." + endOfLine
-               + "\n"
-               + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine;
+               + printApiQuota();
     }
 
 
@@ -216,18 +212,14 @@ public class GithubUtilTest {
         return ConsoleManager.OCTOPUS + "" + endOfLine
                + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : \n"
                + "\tRepository codjo-github-tools has been removed from " + githubUser + " account" + endOfLine
-               + "\n"
-               + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine;
+               + printApiQuota();
     }
 
 
     private String deleteRepositoryCanceledByUserInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
                + "Do you really want to delete the repository codjo-github-tools on  githubUser account ? (y = yes / n = no/) : "
-               + "\n"
-               + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine;
+               + printApiQuota();
     }
 
 
@@ -235,22 +227,23 @@ public class GithubUtilTest {
         return ConsoleManager.OCTOPUS + "" + endOfLine
                + "\tRepositoy deletion with codjo account is not allowed." + endOfLine
                + "\t--> Please, use web interface instead." + endOfLine
-               + "\n"
-               + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine;
+               + printApiQuota();
     }
 
 
-    private String listOpenedPullRequestWithCodjoAccountInConsole() {
+    private String listEventsSinceLastStabilisationInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-               + "\tOpened pull requests from codjo :" + endOfLine
-               + "\tRepo\t\t\t\tTitle\t\t\t\tDate\t\t\t\tUrl" + endOfLine
-               + "\trepo1\t\tfirst pullRequest\t\t12/12/2010 00:00\t\thttp://urlr/pullRequest/1" + endOfLine
-               + "\trepository2\t\tSecond pullRequest\t\t01/12/2010 00:00\t\thttp://urlr/pullRequest/2/other "
+               + "\tHere are the last events on codjo since last pull request 'For Release 2.35' the 12/12/2012."
                + endOfLine
-               + "\n"
-               + "\n"
-               + "\tFor your information, you have 5 requests left" + endOfLine;
+               + "\tUser\t\t\t\t\\tName\t\t\t\tUrl" + endOfLine
+               + "\tcodjo-sandbox\t\tfirst pullRequest\t\thttp://urlr/pullRequest/1" + endOfLine
+               + "\tgonnot\t\tSecond pullRequest\t\thttp://urlr/pullRequest/2/other " + endOfLine
+               + printApiQuota();
+    }
+
+
+    private String printApiQuota() {
+        return ConsoleManager.printApiQuota(5) + endOfLine;
     }
 
 
@@ -303,33 +296,45 @@ public class GithubUtilTest {
 
 
             @Override
-            public List<PullRequest> eventsSinceLastRelease(String githubUser,
-                                                            String githubPassword,
-                                                            String repoName) throws IOException {
-                List<PullRequest> list = new ArrayList<PullRequest>();
-                PullRequest repoOne = new PullRequest();
-                repoOne.setTitle("first pullRequest");
-                repoOne.setBase(setPullRequestRepoName("repo1"));
-                repoOne.setCreatedAt(DateUtil.parseFrenchDate("12/12/2010"));
-                repoOne.setUrl("http://urlr/pullRequest/1");
-                list.add(repoOne);
+            public List<Event> eventsSinceLastRelease(String githubUser,
+                                                      String githubPassword,
+                                                      String repoName, String codjoPomRequestPrefix)
+                  throws IOException {
+                String login = "codjo-sandbox";
+                String pullRequestTitle = "first pullRequest";
+                String date = "12/12/2010";
+                String htmlUrl = "http://urlr/pullRequest/1";
 
-                PullRequest repoTwo = new PullRequest();
-                repoTwo.setTitle("Second pullRequest");
-                repoTwo.setBase(setPullRequestRepoName("repository2"));
-                repoTwo.setCreatedAt(DateUtil.parseFrenchDate("01/12/2010"));
-                repoTwo.setUrl("http://urlr/pullRequest/2/other ");
-                list.add(repoTwo);
+                List<Event> list = new ArrayList<Event>();
+                list.add(buildPullRequestEvent(login, pullRequestTitle, date, htmlUrl));
+
+                login = "gonnot";
+                pullRequestTitle = "Second pullRequest";
+                date = "01/12/2010";
+                htmlUrl = "http://urlr/pullRequest/2/other ";
+
+                list.add(buildPullRequestEvent(login, pullRequestTitle, date, htmlUrl));
+
                 return list;
             }
 
 
-            private PullRequestMarker setPullRequestRepoName(String repoName) {
-                PullRequestMarker base = new PullRequestMarker();
-                Repository repo = new Repository();
-                repo.setName(repoName);
-                base.setRepo(repo);
-                return base;
+            private Event buildPullRequestEvent(String login, String pullRequestTitle, String date, String htmlUrl) {
+                User user = new User();
+                user.setLogin(login);
+
+                PullRequest pullRequestOne = new PullRequest();
+                pullRequestOne.setUser(user);
+                pullRequestOne.setTitle(pullRequestTitle);
+                pullRequestOne.setCreatedAt(DateUtil.parseFrenchDate(date));
+                pullRequestOne.setHtmlUrl(htmlUrl);
+
+                PullRequestPayload payload = new PullRequestPayload();
+                payload.setPullRequest(pullRequestOne);
+
+                Event eventOne = new Event();
+                eventOne.setPayload(payload);
+                return eventOne;
             }
         };
     }

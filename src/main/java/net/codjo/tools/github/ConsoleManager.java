@@ -8,7 +8,10 @@ import java.util.Scanner;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.RequestException;
+import org.eclipse.egit.github.core.event.Event;
+import org.eclipse.egit.github.core.event.PullRequestPayload;
 
+@SuppressWarnings({"UseOfSystemOutOrSystemErr"})
 public class ConsoleManager {
     final static SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     static final String OCTOPUS = "\n\n"
@@ -87,8 +90,13 @@ public class ConsoleManager {
 
     public static void printQuotas(int gitHubQuota) {
         if (gitHubQuota != -1) {
-            System.out.println("\n\n\tFor your information, you have " + gitHubQuota + " requests left");
+            System.out.println(printApiQuota(gitHubQuota));
         }
+    }
+
+
+    static String printApiQuota(int gitHubQuota) {
+        return "\n\n\tFor your information, you have " + gitHubQuota + " requests left";
     }
 
 
@@ -97,16 +105,14 @@ public class ConsoleManager {
     }
 
 
-    public static void printEvents(List<PullRequest> pullRequests, String githubUser) {
-        System.out.println("\tOpened pull requests from " + githubUser + " :");
-        System.out.println("\tRepo\t\t\t\tTitle\t\t\t\tDate\t\t\t\tUrl");
-        for (PullRequest repository : pullRequests) {
-            Date pushedAt = repository.getCreatedAt();
+    public static void printEvents(List<Event> events, String githubUser) {
+        System.out.println("\tHere are the last events on " + githubUser);
+        System.out.println("\tUser\t\t\t\t\tName\t\t\t\tUrl");
+        for (Event repository : events) {
+            PullRequest pullRequest = ((PullRequestPayload)repository.getPayload()).getPullRequest();
             System.out
-                  .println("\t" + repository.getBase().getRepo().getName()
-                           + "\t\t" + repository.getTitle()
-                           + "\t\t" + format.format(pushedAt)
-                           + "\t\t" + repository.getUrl());
+                  .println("\t" + pullRequest.getUser().getLogin() + "\t\t" + pullRequest.getTitle() + "\t\t"
+                           + pullRequest.getHtmlUrl());
         }
     }
 }

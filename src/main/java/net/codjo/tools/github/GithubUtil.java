@@ -4,8 +4,8 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.event.Event;
 
 /**
  *
@@ -155,7 +155,9 @@ public class GithubUtil {
                               String githubPassword,
                               String repoName) throws IOException {
             if ("events".equals(method)) {
-                List<PullRequest> pullRequests = service.eventsSinceLastRelease(githubUser, githubPassword, repoName);
+                //TODO ask for githubUser password
+                List<Event> pullRequests = service.eventsSinceLastRelease(githubUser, githubPassword, repoName,
+                                                                          "for release");
                 ConsoleManager.printEvents(pullRequests, githubUser);
             }
         }

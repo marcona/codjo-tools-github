@@ -2,11 +2,16 @@ package net.codjo.tools.github;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.event.Event;
+import org.eclipse.egit.github.core.service.EventService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
@@ -50,22 +55,55 @@ public class GithubUtilService {
     }
 
 
-    public List<PullRequest> eventsSinceLastRelease(String githubUser,
-                                                    String githubPassword,
-                                                    String repoName) throws IOException {
-        List<PullRequest> resulList = new ArrayList<PullRequest>();
+    public List<Event> eventsSinceLastRelease(String githubUser,
+                                              String githubPassword,
+                                              String repoName, String codjoPomRequestPrefix) throws IOException {
+        client = initGithubClient(githubUser, githubPassword);
 
-//        initGithubClient(githubUser, githubPassword);
+        List<Event> pullRequests = new ArrayList<Event>();
 
-        List<Repository> repositories = getRepositoryList(githubUser, repoName, client);
+        RepositoryService repositoryService = new RepositoryService(client);
+        Repository superPomRepository = repositoryService.getRepository("codjo", "codjo-pom");
 
-        PullRequestService pullRequestService = new PullRequestService(client);
-        for (Repository repository : repositories) {
-            List<PullRequest> pullRequests = pullRequestService.getPullRequests(repository, "open");
-            resulList.addAll(pullRequests);
+        PullRequestService service = new PullRequestService(client);
+        List<PullRequest> pullRequestList = service.getPullRequests(superPomRepository, "closed");
+        Date closedAt = null;
+        //find last  For release pull request --> do we have to sort them ?
+        for (PullRequest pullRequest : pullRequestList) {
+            String pullRequestTitle = pullRequest.getTitle().toLowerCase();
+            if (pullRequestTitle.contains(codjoPomRequestPrefix)) {
+                closedAt = pullRequest.getClosedAt();
+                break;
+            }
         }
 
-        return resulList;
+        if (closedAt != null) {
+            EventService eventService = new EventService(client);
+            PageIterator<Event> codjoEvents = eventService.pageUserReceivedEvents("codjo", true, 0, 1);
+            while (codjoEvents.hasNext()) {
+                Collection<Event> next = codjoEvents.next();
+                for (Event event : next) {
+                    if (event.getCreatedAt().after(closedAt)) {
+                        if ("PullRequestEvent".equals(event.getType())) {
+                            pullRequests.add(event);
+                        }
+                    }
+                }
+            }
+
+            PageIterator<Event> codjo = eventService.pageUserEvents("codjo", true, 0, 1);
+            while (codjo.hasNext()) {
+                Collection<Event> next = codjo.next();
+                for (Event event : next) {
+                    if (event.getCreatedAt().after(closedAt)) {
+                        if ("PullRequestEvent".equals(event.getType())) {
+                            pullRequests.add(event);
+                        }
+                    }
+                }
+            }
+        }
+        return pullRequests;
     }
 
 
