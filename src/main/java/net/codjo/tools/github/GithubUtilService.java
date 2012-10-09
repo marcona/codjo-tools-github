@@ -1,11 +1,14 @@
 package net.codjo.tools.github;
 
+import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_REPOS;
@@ -45,9 +48,31 @@ public class GithubUtilService {
 
     public List<Repository> list(String githubUser, String githubPassword, String repoName) throws IOException {
         client = initGithubClient(githubUser, githubPassword);
+        return getRepositoryList(githubUser, repoName, client);
 
-        //TODO[refactoring]
-        RepositoryService repositoryService = new RepositoryService(client);
+
+    }
+
+
+    public List<PullRequest> listOpenedPullRequest(String githubUser, String githubPassword, String repoName) throws IOException {
+        List<PullRequest> resulList = new ArrayList<PullRequest>();
+
+//        initGithubClient(githubUser, githubPassword);
+
+
+        List<Repository> repositories = getRepositoryList(githubUser,repoName, client);
+
+        PullRequestService pullRequestService = new PullRequestService(client);
+        for (Repository repository : repositories) {
+            List<PullRequest> pullRequests = pullRequestService.getPullRequests(repository, "open");
+            resulList.addAll(pullRequests);
+        }
+
+        return resulList;
+    }
+
+    private List<Repository> getRepositoryList(String githubUser, String repoName, GitHubClient gitHubClient) throws IOException {
+        RepositoryService repositoryService = new RepositoryService(gitHubClient);
         if (repoName != null && !repoName.trim().isEmpty()) {
             return repositoryService.getRepositories(repoName);
         }
@@ -55,5 +80,4 @@ public class GithubUtilService {
             return repositoryService.getRepositories(githubUser);
         }
     }
-
 }

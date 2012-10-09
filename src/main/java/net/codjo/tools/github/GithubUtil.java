@@ -4,6 +4,8 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 
 /**
@@ -22,6 +24,7 @@ public class GithubUtil {
         commands.add(new ListRepositoryCommand());
         commands.add(new ForkRepositoryCommand());
         commands.add(new DeleteRepositoryCommand());
+        commands.add(new ListOpenedPullRequestCommand());
         commands.add(new HelpCommand());
     }
 
@@ -129,6 +132,16 @@ public class GithubUtil {
         }
     }
 
+    private static class ListOpenedPullRequestCommand implements GitHubCommand {
+
+        public void doCommand(final GithubUtilService service, String method, String githubUser, String githubPassword, String repoName) throws IOException {
+            if ("pull-requests".equals(method)) {
+                List<PullRequest> pullRequests = service.listOpenedPullRequest(githubUser, githubPassword, repoName);
+                ConsoleManager.printPullRequestList(pullRequests, githubUser);
+            }
+        }
+    }
+
     private static class ForkRepositoryCommand implements GitHubCommand {
 
         public void doCommand(final GithubUtilService service, String method, String githubUser, String githubPassword, String repoName) throws IOException {
@@ -146,7 +159,7 @@ public class GithubUtil {
     private static class HelpCommand implements GitHubCommand {
 
         public void doCommand(final GithubUtilService service, String method, String githubUser, String githubPassword, String repoName) throws IOException {
-            if (!"fork".equals(method) && !"delete".equals(method) && !"list".equals(method)){
+            if (!"fork".equals(method) && !"delete".equals(method) && !"list".equals(method) && !"pull-requests".equals(method)){
                 ConsoleManager.printHelp();
             }
         }
