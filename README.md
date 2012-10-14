@@ -21,6 +21,7 @@ Example :
          - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME
          - gh fork REPO_NAME      : fork a repository from codjo
          - gh delete REPO_NAME    : delete a repository if exists
+         - gh events [ACCOUNT_NAME] [ACCOUNT_PASSWORD]    : list all events since last stabilisation (last pull request with 'For Release' title
 ```
 
 
@@ -80,7 +81,7 @@ Priority later
  - DONE Avoid delete repo on codjo account
  - DONE add unit tests ... i know its bad ;-)
  - cmd is not generic enough
- - add .cmd(DONE) and .ksh in resource
+ - add .cmd(DONE) and .sh in resource (DONE)
  - use netrc/_netrc by default
  - allow more options (skip proxy, use of _netrc file)
  - error management for program arguments
