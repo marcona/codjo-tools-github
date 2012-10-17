@@ -66,6 +66,8 @@ Priority Asap:
  - Enhance console help (wich account is used..etc)
 
 Priority later
+ - Add a generate fonction that takes in input a repo list, a template file and in output the template with the appropriate variables replaced 
+   --> could be good for hudson or opengrok parametrization.
  - Improve unit tests
       - DONE multiple case for repository deletion
       - commonalize console messages between production code and tests ?
