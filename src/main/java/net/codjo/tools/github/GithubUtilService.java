@@ -90,18 +90,6 @@ public class GithubUtilService {
                     }
                 }
             }
-
-            PageIterator<Event> codjo = eventService.pageUserEvents("codjo", true, 0, 1);
-            while (codjo.hasNext()) {
-                Collection<Event> next = codjo.next();
-                for (Event event : next) {
-                    if (event.getCreatedAt().after(closedAt)) {
-                        if ("PullRequestEvent".equals(event.getType())) {
-                            pullRequests.add(event);
-                        }
-                    }
-                }
-            }
         }
         return pullRequests;
     }
