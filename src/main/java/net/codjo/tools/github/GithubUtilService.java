@@ -17,10 +17,6 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 
 import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_REPOS;
 
-/**
- * Created with IntelliJ IDEA. User: marcona Date: 20/07/12 Time: 09:02 To change this template use File | Settings |
- * File Templates.
- */
 public class GithubUtilService {
     private GitHubClient client = new GitHubClient();
 
