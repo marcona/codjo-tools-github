@@ -2,6 +2,7 @@ package net.codjo.tools.github;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -9,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import net.codjo.test.common.LogString;
 import net.codjo.util.date.DateUtil;
+import net.codjo.util.file.FileUtil;
+import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
@@ -155,6 +158,28 @@ public class GithubUtilTest {
 
 
     @Test
+    public void test_postIssue() throws Exception {
+        final String issueTitle = "codjo-administration+-+Bug+fix+in+administration+panel";
+        File issueContentFile = new File(getClass().getResource("/" + issueTitle).toURI());
+        String[] args = new String[]{"postIssue", "codjo", "githubPassword", "codjo-github-tools", issueTitle, "closed",
+                                     issueContentFile.getCanonicalPath()};
+        InputStream stdin = System.in;
+        try {
+            githubUtil.localMain(mockGithubService, args);
+            logString.assertContent(
+                  "initGithubClient(codjo, githubPassword), postIssue(codjo, githubPassword, codjo-github-tools, codjo-administration+-+Bug+fix+in+administration+panel, "
+                  + issueContentFile.getPath() + ", closed)");
+            assertThat(outContent.toString(),
+                       is(postIssueWithCodjoAccountInConsole(issueTitle, FileUtil.loadContent(issueContentFile))));
+            assertNoError();
+        }
+        finally {
+            System.setIn(stdin);
+        }
+    }
+
+
+    @Test
     public void test_noParameterPrintsHelp
           () {
         String[] args = new String[]{};
@@ -181,6 +206,8 @@ public class GithubUtilTest {
                         "         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME" + endOfLine +
                         "         - gh fork REPO_NAME      : fork a repository from codjo" + endOfLine +
                         "         - gh delete REPO_NAME    : delete a repository if exists" + endOfLine +
+                        "         - gh postIssue REPO_NAME ISSUE_TITLE STATE ISSUE_CONTENT_FILE_PATH    : add a new issue in repository"
+                        + endOfLine +
                         "         - gh events [ACCOUNT_NAME] [ACCOUNT_PASSWORD]    : list all events since last stabilisation (last pull request with 'For Release' title"
                         + endOfLine;
 
@@ -231,9 +258,18 @@ public class GithubUtilTest {
     }
 
 
+    private String postIssueWithCodjoAccountInConsole(String title, String content) {
+        return ConsoleManager.OCTOPUS + "" + endOfLine
+               + "\tIssue " + title + " has been created with codjo account" + endOfLine
+               + "\twith the following content:" + endOfLine
+               + content + endOfLine
+               + printApiQuota();
+    }
+
+
     private String listEventsSinceLastStabilisationInConsole() {
         return ConsoleManager.OCTOPUS + "" + endOfLine
-               + "\tHere are the last events on codjo since last pull request 'For Release 2.35' the 12/12/2012."
+               + "\tHere are the last events on codjo"
                + endOfLine
                + "\tUser\t\t\t\t\\tName\t\t\t\tUrl" + endOfLine
                + "\tcodjo-sandbox\t\tfirst pullRequest\t\thttp://urlr/pullRequest/1" + endOfLine
@@ -316,6 +352,20 @@ public class GithubUtilTest {
                 list.add(buildPullRequestEvent(login, pullRequestTitle, date, htmlUrl));
 
                 return list;
+            }
+
+
+            @Override
+            public Issue postIssue(String githubUser,
+                                   String githubPassword,
+                                   String repoName,
+                                   String title,
+                                   String contentFilePath, String state) throws IOException {
+                logString.call("postIssue", githubUser, githubPassword, repoName, title, contentFilePath, state);
+                final Issue issue = new Issue();
+                issue.setTitle(title);
+                issue.setBody(FileUtil.loadContent(new File(contentFilePath)));
+                return issue;
             }
 
 

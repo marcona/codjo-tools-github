@@ -1,10 +1,14 @@
 package net.codjo.tools.github;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import net.codjo.util.file.FileUtil;
+import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryId;
@@ -12,12 +16,14 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.event.Event;
 import org.eclipse.egit.github.core.service.EventService;
+import org.eclipse.egit.github.core.service.IssueService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_REPOS;
 
 public class GithubUtilService {
+    static protected final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private GitHubClient client = new GitHubClient();
 
 
@@ -37,6 +43,22 @@ public class GithubUtilService {
     public void deleteRepo(String githubUser, String githubPassword, String repoName) throws IOException {
         client = initGithubClient(githubUser, githubPassword);
         client.delete(SEGMENT_REPOS + "/" + githubUser + "/" + repoName);
+    }
+
+    public Issue postIssue(String githubUser,
+                           String githubPassword,
+                           String repoName,
+                           String title,
+                           String contentFilePath, String state) throws IOException {
+        client = initGithubClient(githubUser, githubPassword);
+        IssueService issueService= new IssueService(client);
+        final Issue issue = new Issue();
+        issue.setTitle(title);
+        issue.setBody(FileUtil.loadContent(new File(contentFilePath)));
+        final Issue resultIssue = issueService.createIssue(githubUser, repoName, issue);
+
+        resultIssue.setState(state);
+        return issueService.editIssue(githubUser, repoName, resultIssue);
     }
 
 

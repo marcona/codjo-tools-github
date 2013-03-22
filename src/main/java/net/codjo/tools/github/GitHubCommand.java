@@ -10,5 +10,12 @@ import java.io.IOException;
  * To change this template use File | Settings | File Templates.
  */
 public interface GitHubCommand {
-    void doCommand(GithubUtilService service, String method, String githubUser, String githubPassword, String repoName) throws IOException;
+    void doCommand(GithubUtilService service,
+                   String method,
+                   String githubUser,
+                   String githubPassword,
+                   String repoName,
+                   String issueTitle,
+                   String issueFilePath,
+                   String state) throws IOException;
 }

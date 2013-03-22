@@ -4,6 +4,7 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.event.Event;
 
@@ -27,6 +28,7 @@ public class GithubUtil {
         commands.add(new ForkRepositoryCommand());
         commands.add(new DeleteRepositoryCommand());
         commands.add(new ListLastEventsSinceLastStabilisation());
+        commands.add(new PostIssueCommand());
         commands.add(new HelpCommand());
     }
 
@@ -87,20 +89,31 @@ public class GithubUtil {
     public void localMain(final GithubUtilService service, String[] args) {
         ConsoleManager.printHeader();
         try {
-            if (args.length == 3 || args.length == 4) {
+            //TODO Improve argument management
+            if (args.length == 3 || args.length == 4 || args.length == 7) {
                 String method = args[0];
                 String githubUser = args[1];
                 String githubPassword = args[2];
+                String issueTitle = "";
+                String issueFilePath = "";
                 String repoName = "";
-                if (args.length == 4) {
+                String closedAt = "";
+                if (args.length >= 4) {
                     repoName = args[3];
+                }
+                if (args.length == 7) {//Issue Management
+                    issueTitle = args[4];
+                    closedAt = args[5];
+                    issueFilePath = args[6];
                 }
 
                 initProxyConfiguration();
                 service.initGithubClient(githubUser, githubPassword);
 
                 for (GitHubCommand command : commands) {
-                    command.doCommand(service, method, githubUser, githubPassword, repoName);
+                    //TODO Improve argument management
+                    command.doCommand(service, method, githubUser, githubPassword, repoName, issueTitle, issueFilePath,
+                                      closedAt);
                 }
                 ConsoleManager.printQuotas(service.getGitHubQuota());
             }
@@ -114,13 +127,30 @@ public class GithubUtil {
     }
 
 
+    private static class PostIssueCommand implements GitHubCommand {
+
+        public void doCommand(final GithubUtilService service,
+                              String method,
+                              String githubUser,
+                              String githubPassword,
+                              String repoName, final String issueTitle, final String issueFilePath, String state)
+              throws IOException {
+            if ("postIssue".equals(method)) {
+                final Issue issue = service.postIssue(githubUser, githubPassword, repoName, issueTitle, issueFilePath,
+                                                      state);
+                ConsoleManager.printPostIssueResult(githubUser, issue);
+            }
+        }
+    }
+
     private static class DeleteRepositoryCommand implements GitHubCommand {
 
         public void doCommand(final GithubUtilService service,
                               String method,
                               String githubUser,
                               String githubPassword,
-                              String repoName) throws IOException {
+                              String repoName, String issueTitle, String issueFilePath, String state)
+              throws IOException {
             if ("delete".equals(method)) {
                 DeleteRepositoryHandler deleteHandler = new DeleteRepositoryHandler() {
                     public void handleDelete(String githubUser, String githubPassword, String repoName)
@@ -139,7 +169,8 @@ public class GithubUtil {
                               String method,
                               String githubUser,
                               String githubPassword,
-                              String repoName) throws IOException {
+                              String repoName, String issueTitle, String issueFilePath, String state)
+              throws IOException {
             if ("list".equals(method)) {
                 List<Repository> repoList = service.list(githubUser, githubPassword, repoName);
                 ConsoleManager.printRepositoryList(repoList, githubUser);
@@ -153,9 +184,11 @@ public class GithubUtil {
                               String method,
                               String githubUser,
                               String githubPassword,
-                              String repoName) throws IOException {
+                              String repoName, String issueTitle, String issueFilePath, String state)
+              throws IOException {
             if ("events".equals(method)) {
                 //TODO ask for githubUser password
+                //TODO get the status, for example if pull request has been merged
                 List<Event> pullRequests = service.eventsSinceLastRelease(githubUser, githubPassword, repoName,
                                                                           "for release");
                 ConsoleManager.printEvents(pullRequests, githubUser);
@@ -169,7 +202,8 @@ public class GithubUtil {
                               String method,
                               String githubUser,
                               String githubPassword,
-                              String repoName) throws IOException {
+                              String repoName, String issueTitle, String issueFilePath, String state)
+              throws IOException {
             if ("fork".equals(method)) {
                 ConsoleManager.forkRepository(new ForkRepositoryHandler() {
                     public void handleFork(String githubUser, String githubPassword, String repoName)
@@ -187,9 +221,10 @@ public class GithubUtil {
                               String method,
                               String githubUser,
                               String githubPassword,
-                              String repoName) throws IOException {
+                              String repoName, String issueTitle, String issueFilePath, String state)
+              throws IOException {
             if (!"fork".equals(method) && !"delete".equals(method) && !"list".equals(method)
-                && !"events".equals(method)) {
+                && !"events".equals(method) && !"postIssue".equals(method)) {
                 ConsoleManager.printHelp();
             }
         }

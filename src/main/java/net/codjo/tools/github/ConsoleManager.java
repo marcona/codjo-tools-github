@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import org.eclipse.egit.github.core.Issue;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.RequestException;
@@ -82,6 +83,7 @@ public class ConsoleManager {
         System.out.println("         - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME");
         System.out.println("         - gh fork REPO_NAME      : fork a repository from codjo");
         System.out.println("         - gh delete REPO_NAME    : delete a repository if exists");
+        System.out.println("         - gh postIssue REPO_NAME ISSUE_TITLE STATE ISSUE_CONTENT_FILE_PATH    : add a new issue in repository");
         System.out
               .println(
                     "         - gh events [ACCOUNT_NAME] [ACCOUNT_PASSWORD]    : list all events since last stabilisation (last pull request with 'For Release' title");
@@ -114,6 +116,13 @@ public class ConsoleManager {
                   .println("\t" + pullRequest.getUser().getLogin() + "\t\t" + pullRequest.getTitle() + "\t\t"
                            + pullRequest.getHtmlUrl());
         }
+    }
+
+
+    public static void printPostIssueResult(String githubUser, Issue issue) {
+        System.out.println("\tIssue " + issue.getTitle() + " has been created with " + githubUser + " account");
+        System.out.println("\twith the following content:");
+        System.out.println(issue.getBody());
     }
 }
 
