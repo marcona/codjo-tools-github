@@ -11,14 +11,14 @@ import org.eclipse.egit.github.core.event.Event;
 /**
  *
  */
-public class GithubUtil {
+public class GithubCommandTool {
     static final String PROXY_CONFIG_MESSAGE =
           "There was a problem while loading proxy configuration in .gitconfig file\n"
           + " \tProxy configuration is ignored.";
     private final List<GitHubCommand> commands = new ArrayList<GitHubCommand>();
 
 
-    public GithubUtil() {
+    public GithubCommandTool() {
         initCommands();
     }
 
@@ -81,39 +81,21 @@ public class GithubUtil {
 
 
     public static void main(String[] args) {
-        GithubUtilService githubUtilService = new GithubUtilService();
-        new GithubUtil().localMain(githubUtilService, args);
+        new GithubCommandTool().localMain(new GithubUtilServiceImpl(), args);
     }
 
 
     public void localMain(final GithubUtilService service, String[] args) {
         ConsoleManager.printHeader();
         try {
-            //TODO Improve argument management
-            if (args.length == 3 || args.length == 4 || args.length == 7) {
-                String method = args[0];
-                String githubUser = args[1];
-                String githubPassword = args[2];
-                String issueTitle = "";
-                String issueFilePath = "";
-                String repoName = "";
-                String closedAt = "";
-                if (args.length >= 4) {
-                    repoName = args[3];
-                }
-                if (args.length == 7) {//Issue Management
-                    issueTitle = args[4];
-                    closedAt = args[5];
-                    issueFilePath = args[6];
-                }
+            GitHubParameter commandParam = new GitHubParameter(args);
 
+            if (commandParam.githubParamsAreValid()) {
                 initProxyConfiguration();
-                service.initGithubClient(githubUser, githubPassword);
+                service.initGithubClient(commandParam.getUser(), commandParam.getPassword());
 
                 for (GitHubCommand command : commands) {
-                    //TODO Improve argument management
-                    command.doCommand(service, method, githubUser, githubPassword, repoName, issueTitle, issueFilePath,
-                                      closedAt);
+                    command.doCommand(service, commandParam);
                 }
                 ConsoleManager.printQuotas(service.getGitHubQuota());
             }
@@ -129,102 +111,94 @@ public class GithubUtil {
 
     private static class PostIssueCommand implements GitHubCommand {
 
-        public void doCommand(final GithubUtilService service,
-                              String method,
-                              String githubUser,
-                              String githubPassword,
-                              String repoName, final String issueTitle, final String issueFilePath, String state)
+        public void doCommand(final GithubUtilService service, GitHubParameter ghParam)
               throws IOException {
-            if ("postIssue".equals(method)) {
-                final Issue issue = service.postIssue(githubUser, githubPassword, repoName, issueTitle, issueFilePath,
-                                                      state);
-                ConsoleManager.printPostIssueResult(githubUser, issue);
+            if ("postIssue".equals(ghParam.getMethod())) {
+                final Issue issue = service.postIssue(ghParam.getUser(),
+                                                      ghParam.getPassword(),
+                                                      ghParam.getRepoName(),
+                                                      ghParam.getIssueTitle(),
+                                                      ghParam.getIssueFilePath(),
+                                                      ghParam.getIssueState());
+                service.addLabels(ghParam.getUser(),
+                                  ghParam.getPassword(),
+                                  ghParam.getRepoName(),
+                                  issue,
+                                  ghParam.getLabels());
+                ConsoleManager.printPostIssueResult(ghParam.getUser(), issue);
             }
         }
     }
 
     private static class DeleteRepositoryCommand implements GitHubCommand {
 
-        public void doCommand(final GithubUtilService service,
-                              String method,
-                              String githubUser,
-                              String githubPassword,
-                              String repoName, String issueTitle, String issueFilePath, String state)
+        public void doCommand(final GithubUtilService service, GitHubParameter ghParam)
               throws IOException {
-            if ("delete".equals(method)) {
+            if ("delete".equals(ghParam.getMethod())) {
                 DeleteRepositoryHandler deleteHandler = new DeleteRepositoryHandler() {
                     public void handleDelete(String githubUser, String githubPassword, String repoName)
                           throws IOException {
                         service.deleteRepo(githubUser, githubPassword, repoName);
                     }
                 };
-                ConsoleManager.deleteRepositor(deleteHandler, githubUser, githubPassword, repoName);
+                ConsoleManager.deleteRepositor(deleteHandler, ghParam.getUser(),
+                                               ghParam.getPassword(),
+                                               ghParam.getRepoName());
             }
         }
     }
 
     private static class ListRepositoryCommand implements GitHubCommand {
 
-        public void doCommand(final GithubUtilService service,
-                              String method,
-                              String githubUser,
-                              String githubPassword,
-                              String repoName, String issueTitle, String issueFilePath, String state)
+        public void doCommand(final GithubUtilService service, GitHubParameter ghParam)
               throws IOException {
-            if ("list".equals(method)) {
-                List<Repository> repoList = service.list(githubUser, githubPassword, repoName);
-                ConsoleManager.printRepositoryList(repoList, githubUser);
+            if ("list".equals(ghParam.getMethod())) {
+                List<Repository> repoList = service.list(ghParam.getUser(),
+                                                         ghParam.getPassword(),
+                                                         ghParam.getRepoName());
+                ConsoleManager.printRepositoryList(repoList, ghParam.getUser());
             }
         }
     }
 
     private static class ListLastEventsSinceLastStabilisation implements GitHubCommand {
 
-        public void doCommand(final GithubUtilService service,
-                              String method,
-                              String githubUser,
-                              String githubPassword,
-                              String repoName, String issueTitle, String issueFilePath, String state)
+        public void doCommand(final GithubUtilService service, GitHubParameter ghParam)
               throws IOException {
-            if ("events".equals(method)) {
+            if ("events".equals(ghParam.getMethod())) {
                 //TODO ask for githubUser password
                 //TODO get the status, for example if pull request has been merged
-                List<Event> pullRequests = service.eventsSinceLastRelease(githubUser, githubPassword, repoName,
+                List<Event> pullRequests = service.eventsSinceLastRelease(ghParam.getUser(),
+                                                                          ghParam.getPassword(),
+                                                                          ghParam.getRepoName(),
                                                                           "for release");
-                ConsoleManager.printEvents(pullRequests, githubUser);
+                ConsoleManager.printEvents(pullRequests, ghParam.getUser());
             }
         }
     }
 
     private static class ForkRepositoryCommand implements GitHubCommand {
 
-        public void doCommand(final GithubUtilService service,
-                              String method,
-                              String githubUser,
-                              String githubPassword,
-                              String repoName, String issueTitle, String issueFilePath, String state)
+        public void doCommand(final GithubUtilService service, GitHubParameter ghParam)
               throws IOException {
-            if ("fork".equals(method)) {
+            if ("fork".equals(ghParam.getMethod())) {
                 ConsoleManager.forkRepository(new ForkRepositoryHandler() {
                     public void handleFork(String githubUser, String githubPassword, String repoName)
                           throws IOException {
                         service.forkRepo(githubUser, githubPassword, repoName);
                     }
-                }, githubUser, githubPassword, repoName);
+                }, ghParam.getUser(), ghParam.getPassword(), ghParam.getRepoName());
             }
         }
     }
 
     private static class HelpCommand implements GitHubCommand {
 
-        public void doCommand(final GithubUtilService service,
-                              String method,
-                              String githubUser,
-                              String githubPassword,
-                              String repoName, String issueTitle, String issueFilePath, String state)
+        public void doCommand(final GithubUtilService service, GitHubParameter ghParam)
               throws IOException {
-            if (!"fork".equals(method) && !"delete".equals(method) && !"list".equals(method)
-                && !"events".equals(method) && !"postIssue".equals(method)) {
+            if (!"fork".equals(ghParam.getMethod()) && !"delete".equals(ghParam.getMethod())
+                && !"list".equals(ghParam.getMethod())
+                && !"events".equals(ghParam.getMethod()) && !"postIssue".equals(ghParam.getMethod())) {
                 ConsoleManager.printHelp();
             }
         }

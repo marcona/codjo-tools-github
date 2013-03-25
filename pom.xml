@@ -7,12 +7,12 @@
     -->
     <groupId>net.codjo.github</groupId>
     <artifactId>codjo-tools-github</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1</version>
     <!-- START SNIPPET: super-pom -->
     <parent>
         <groupId>net.codjo.pom</groupId>
         <artifactId>codjo-pom-external</artifactId>
-        <version>SNAPSHOT</version>
+        <version>2.43</version>
     </parent>
     <!-- END SNIPPET: super-pom -->
     <dependencies>
@@ -56,10 +56,6 @@
         </dependency>
     </dependencies>
 
-    <properties>
-        <jetty.version>6.1.25</jetty.version>
-    </properties>
-
     <name>codjo-tools-github</name>
     <description>Application standalone pour la manipulation de github</description>
 
@@ -73,7 +69,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>net.codjo.tools.github.GithubUtil</mainClass>
+                            <mainClass>net.codjo.tools.github.GithubCommandTool</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
                         </manifest>

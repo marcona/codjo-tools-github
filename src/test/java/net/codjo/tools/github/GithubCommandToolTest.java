@@ -3,21 +3,10 @@ package net.codjo.tools.github;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 import net.codjo.test.common.LogString;
-import net.codjo.util.date.DateUtil;
 import net.codjo.util.file.FileUtil;
-import org.eclipse.egit.github.core.Issue;
-import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.event.Event;
-import org.eclipse.egit.github.core.event.PullRequestPayload;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,11 +15,11 @@ import static net.codjo.test.common.matcher.JUnitMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class GithubUtilTest {
+public class GithubCommandToolTest {
     private static final String endOfLine = System.getProperty("line.separator");
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-    private GithubUtil githubUtil;
+    private GithubCommandTool githubCommandTool;
     private GithubUtilService mockGithubService;
     private LogString logString = new LogString();
     private String proxyMessage;
@@ -38,18 +27,18 @@ public class GithubUtilTest {
 
     @Before
     public void setUpStreams() {
-        githubUtil = new GithubUtil();
+        githubCommandTool = new GithubCommandTool();
         logString.clear();
-        mockGithubService = buildMockService(logString);
+        mockGithubService = new GithubUtilMockService(logString);
         //TODO Testing System.out could be yeald to codjo-test ?
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
-        GitConfigUtil gitConfigUtil = GithubUtil.tryToLoadProxyConfig();
+        GitConfigUtil gitConfigUtil = GithubCommandTool.tryToLoadProxyConfig();
         if (gitConfigUtil == null || gitConfigUtil.getProxyHost() != null) {
             proxyMessage = "";
         }
         else {
-            proxyMessage = GithubUtil.PROXY_CONFIG_MESSAGE;
+            proxyMessage = GithubCommandTool.PROXY_CONFIG_MESSAGE;
         }
     }
 
@@ -65,7 +54,7 @@ public class GithubUtilTest {
     public void test_badMethodPrintsHelp() {
         String[] args = new String[]{"badMethod", "githubUser", "githubPassword"};
 
-        githubUtil.localMain(mockGithubService, args);
+        githubCommandTool.localMain(mockGithubService, args);
         assertThat(outContent.toString(), is(helpInConsole(true)));
         assertNoError();
     }
@@ -74,7 +63,7 @@ public class GithubUtilTest {
     @Test
     public void test_listDefaultRepositories() {
         String[] args = new String[]{"list", "githubUser", "githubPassword"};
-        githubUtil.localMain(mockGithubService, args);
+        githubCommandTool.localMain(mockGithubService, args);
         assertThat(outContent.toString(), is(repositoryListInConsole("githubUser")));
         assertNoError();
     }
@@ -83,7 +72,7 @@ public class GithubUtilTest {
     @Test
     public void test_listRepositoriesFromOtherUser() {
         String[] args = new String[]{"list", "githubUser", "githubPassword", "codjo-sandbox"};
-        githubUtil.localMain(mockGithubService, args);
+        githubCommandTool.localMain(mockGithubService, args);
         assertThat(outContent.toString(), is(repositoryListInConsole("githubUser")));
         assertNoError();
     }
@@ -92,7 +81,7 @@ public class GithubUtilTest {
     @Test
     public void test_forkRepository() {
         String[] args = new String[]{"fork", "githubUser", "githubPassword", "codjo-github-tools"};
-        githubUtil.localMain(mockGithubService, args);
+        githubCommandTool.localMain(mockGithubService, args);
         logString.assertContent(
               "initGithubClient(githubUser, githubPassword), forkRepo(githubUser, githubPassword, codjo-github-tools)");
         assertThat(outContent.toString(), is(forkRepositoryInConsole()));
@@ -107,7 +96,7 @@ public class GithubUtilTest {
         InputStream stdin = System.in;
         try {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
-            githubUtil.localMain(mockGithubService, args);
+            githubCommandTool.localMain(mockGithubService, args);
             logString.assertContent(
                   "initGithubClient(githubUser, githubPassword), deleteRepo(githubUser, githubPassword, codjo-github-tools)");
             assertThat(outContent.toString(), is(deleteRepositoryInConsole("githubUser")));
@@ -126,7 +115,7 @@ public class GithubUtilTest {
         InputStream stdin = System.in;
         try {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
-            githubUtil.localMain(mockGithubService, args);
+            githubCommandTool.localMain(mockGithubService, args);
             logString.assertContent(
                   "initGithubClient(githubUser, githubPassword)");
             assertThat(outContent.toString(), is(deleteRepositoryCanceledByUserInConsole()));
@@ -145,7 +134,7 @@ public class GithubUtilTest {
         InputStream stdin = System.in;
         try {
             System.setIn(new ByteArrayInputStream(data.getBytes()));
-            githubUtil.localMain(mockGithubService, args);
+            githubCommandTool.localMain(mockGithubService, args);
             logString.assertContent(
                   "initGithubClient(codjo, githubPassword)");
             assertThat(outContent.toString(), is(deleteRepositoryWithCodjoAccountInConsole()));
@@ -159,16 +148,17 @@ public class GithubUtilTest {
 
     @Test
     public void test_postIssue() throws Exception {
-        final String issueTitle = "codjo-administration+-+Bug+fix+in+administration+panel";
+        final String issueTitle = "myFirstIssue";
         File issueContentFile = new File(getClass().getResource("/" + issueTitle).toURI());
-        String[] args = new String[]{"postIssue", "codjo", "githubPassword", "codjo-github-tools", issueTitle, "closed",
-                                     issueContentFile.getCanonicalPath()};
+        String[] args = new String[]{"postIssue", "codjo", "password", "monRepo", issueTitle, "closed",
+                                     issueContentFile.getCanonicalPath(), "label_1", "label_2"};
         InputStream stdin = System.in;
         try {
-            githubUtil.localMain(mockGithubService, args);
+            githubCommandTool.localMain(mockGithubService, args);
             logString.assertContent(
-                  "initGithubClient(codjo, githubPassword), postIssue(codjo, githubPassword, codjo-github-tools, codjo-administration+-+Bug+fix+in+administration+panel, "
-                  + issueContentFile.getPath() + ", closed)");
+                  "initGithubClient(codjo, password), "
+                  + "postIssue(codjo, password, monRepo, myFirstIssue, " + issueContentFile.getPath() + ", closed), "
+                  + "addLabels(codjo, password, monRepo, myFirstIssue, [label_1, label_2])");
             assertThat(outContent.toString(),
                        is(postIssueWithCodjoAccountInConsole(issueTitle, FileUtil.loadContent(issueContentFile))));
             assertNoError();
@@ -183,7 +173,7 @@ public class GithubUtilTest {
     public void test_noParameterPrintsHelp
           () {
         String[] args = new String[]{};
-        githubUtil.localMain(mockGithubService, args);
+        githubCommandTool.localMain(mockGithubService, args);
         assertEquals(helpInConsole(false), outContent.toString());
         assertNoError();
     }
@@ -192,9 +182,9 @@ public class GithubUtilTest {
     @Test
     public void test_listOpenedPullRequest() {
         String[] args = new String[]{"events", "codjo", "githubPassword"};
-        githubUtil.localMain(mockGithubService, args);
+        githubCommandTool.localMain(mockGithubService, args);
         logString.assertContent("initGithubClient(codjo, githubPassword)");
-        assertThat(outContent.toString(), is(listEventsSinceLastStabilisationInConsole()));
+        assertThat(outContent.toString(), equalTo(listEventsSinceLastStabilisationInConsole()));
         assertNoError();
     }
 
@@ -271,7 +261,7 @@ public class GithubUtilTest {
         return ConsoleManager.OCTOPUS + "" + endOfLine
                + "\tHere are the last events on codjo"
                + endOfLine
-               + "\tUser\t\t\t\t\\tName\t\t\t\tUrl" + endOfLine
+               + "\tUser\t\t\t\t\tName\t\t\t\tUrl" + endOfLine
                + "\tcodjo-sandbox\t\tfirst pullRequest\t\thttp://urlr/pullRequest/1" + endOfLine
                + "\tgonnot\t\tSecond pullRequest\t\thttp://urlr/pullRequest/2/other " + endOfLine
                + printApiQuota();
@@ -285,107 +275,5 @@ public class GithubUtilTest {
 
     private void assertNoError() {
         assertEquals("", errContent.toString());
-    }
-
-
-    private GithubUtilService buildMockService(final LogString logString) {
-        return new GithubUtilService() {
-            @Override
-            public GitHubClient initGithubClient(String githubUser, String githubPassword) {
-                logString.call("initGithubClient", githubUser, githubPassword);
-                return null;
-            }
-
-
-            @Override
-            public void forkRepo(String githubUser, String githubPassword, String repoName) throws IOException {
-                logString.call("forkRepo", githubUser, githubPassword, repoName);
-            }
-
-
-            @Override
-            public void deleteRepo(String githubUser, String githubPassword, String repoName) throws IOException {
-                logString.call("deleteRepo", githubUser, githubPassword, repoName);
-            }
-
-
-            @Override
-            public int getGitHubQuota() throws IOException {
-                return 5;
-            }
-
-
-            @Override
-            public List<Repository> list(String githubUser, String githubPassword, String repoName) throws IOException {
-                List<Repository> list = new ArrayList<Repository>();
-                Repository repoOne = new Repository();
-                repoOne.setName("codjo-repoOne");
-                repoOne.setPushedAt(DateUtil.parseFrenchDate("19/07/2012"));
-                list.add(repoOne);
-
-                Repository repoTwo = new Repository();
-                repoTwo.setName("codjo-repoTwo");
-                repoTwo.setPushedAt(DateUtil.parseFrenchDate("05/07/2012"));
-                list.add(repoTwo);
-                return list;
-            }
-
-
-            @Override
-            public List<Event> eventsSinceLastRelease(String githubUser,
-                                                      String githubPassword,
-                                                      String repoName, String codjoPomRequestPrefix)
-                  throws IOException {
-                String login = "codjo-sandbox";
-                String pullRequestTitle = "first pullRequest";
-                String date = "12/12/2010";
-                String htmlUrl = "http://urlr/pullRequest/1";
-
-                List<Event> list = new ArrayList<Event>();
-                list.add(buildPullRequestEvent(login, pullRequestTitle, date, htmlUrl));
-
-                login = "gonnot";
-                pullRequestTitle = "Second pullRequest";
-                date = "01/12/2010";
-                htmlUrl = "http://urlr/pullRequest/2/other ";
-
-                list.add(buildPullRequestEvent(login, pullRequestTitle, date, htmlUrl));
-
-                return list;
-            }
-
-
-            @Override
-            public Issue postIssue(String githubUser,
-                                   String githubPassword,
-                                   String repoName,
-                                   String title,
-                                   String contentFilePath, String state) throws IOException {
-                logString.call("postIssue", githubUser, githubPassword, repoName, title, contentFilePath, state);
-                final Issue issue = new Issue();
-                issue.setTitle(title);
-                issue.setBody(FileUtil.loadContent(new File(contentFilePath)));
-                return issue;
-            }
-
-
-            private Event buildPullRequestEvent(String login, String pullRequestTitle, String date, String htmlUrl) {
-                User user = new User();
-                user.setLogin(login);
-
-                PullRequest pullRequestOne = new PullRequest();
-                pullRequestOne.setUser(user);
-                pullRequestOne.setTitle(pullRequestTitle);
-                pullRequestOne.setCreatedAt(DateUtil.parseFrenchDate(date));
-                pullRequestOne.setHtmlUrl(htmlUrl);
-
-                PullRequestPayload payload = new PullRequestPayload();
-                payload.setPullRequest(pullRequestOne);
-
-                Event eventOne = new Event();
-                eventOne.setPayload(payload);
-                return eventOne;
-            }
-        };
     }
 }

@@ -21,6 +21,7 @@ Example :
          - gh list [ACCOUNT_NAME] : list all repositories from ACCOUNT_NAME
          - gh fork REPO_NAME      : fork a repository from codjo
          - gh delete REPO_NAME    : delete a repository if exists
+         - gh postIssue REPO_NAME ISSUE_TITLE STATE ISSUE_CONTENT_FILE_PATH LABEL_LIST   : add a new issue in repository
          - gh events [ACCOUNT_NAME] [ACCOUNT_PASSWORD]    : list all events since last stabilisation (last pull request with 'For Release' title
 ```
 
@@ -92,7 +93,7 @@ Priority later
     see : http://sourceforge.net/projects/javacurses/
           Java-Readline or jline2.
           http://cliche.sourceforge.net/?f=manual
- - avoid multiple if-else to select method in GithubUtil main
+ - avoid multiple if-else to select method in GithubUtil main DONE
  - yeald System.out redirection for unit-test in codjo-test ?
  - Add search in pull request, or in code !
  - automatic download of last version: is it possible to use github to download last artifact, of course ;-)
@@ -102,6 +103,7 @@ Priority later
  Packaging :
 -----------
 
+  * change versions in pom
   * mvn clean install and copy nested artifacts in the right place (precise , isn't it)
    e.g in a deploy directory copy codjo-tools-github.jar and the ./lib directory
-  
+  * switch to snapshot
