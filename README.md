@@ -63,7 +63,7 @@ Priority Asap:
  - enhance "list" method : add fork date + nb days between fork date and last push to identify projects that have been
    forked without any modification.
 
- - enhance packaging
+ - DONE enhance packaging
  - rename GithubUtil
  - Enhance console help (wich account is used..etc)
 
@@ -103,7 +103,6 @@ Priority later
  Packaging :
 -----------
 
-  * change versions in pom
-  * mvn clean install and copy nested artifacts in the right place (precise , isn't it)
-   e.g in a deploy directory copy codjo-tools-github.jar and the ./lib directory
-  * switch to snapshot
+  * mvn release:prepare
+  * mvn release:perform -DconnectionUrl=scm:git:file:///c:/dev/projects/github/codjo-tools-github/.git
+  * unzip /target/codjo-tools-github-assembly.zip where you want

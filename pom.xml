@@ -7,7 +7,7 @@
     -->
     <groupId>net.codjo.github</groupId>
     <artifactId>codjo-tools-github</artifactId>
-    <version>1.1</version>
+    <version>1.0-SNAPSHOT</version>
     <!-- START SNIPPET: super-pom -->
     <parent>
         <groupId>net.codjo.pom</groupId>
@@ -76,7 +76,24 @@
                     </archive>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <preparationGoals>clean</preparationGoals>
+                    <goals>assembly</goals>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>target/classes/assembly/distribution.xml</descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
