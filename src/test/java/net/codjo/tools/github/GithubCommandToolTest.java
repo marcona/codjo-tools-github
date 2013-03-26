@@ -157,7 +157,7 @@ public class GithubCommandToolTest {
             githubCommandTool.localMain(mockGithubService, args);
             logString.assertContent(
                   "initGithubClient(codjo, password), "
-                  + "postIssue(codjo, password, monRepo, myFirstIssue, " + issueContentFile.getPath() + ", closed), "
+                  + "postIssue(codjo, password, monRepo, myFirstIssue, " + issueContentFile.getCanonicalPath() + ", closed), "
                   + "addLabels(codjo, password, monRepo, myFirstIssue, [label_1, label_2])");
             assertThat(outContent.toString(),
                        is(postIssueWithCodjoAccountInConsole(issueTitle, FileUtil.loadContent(issueContentFile))));
