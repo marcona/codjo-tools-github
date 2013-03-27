@@ -2,7 +2,7 @@ codjo-tools-github
 =================
 
 A very simple tool for github to be used in command line.
-It will be used to manage codjo project
+It will be used to manage codjo framework project (https://github.com/codjo or http://www.codjo.net/)
 
 
 Example :
@@ -51,54 +51,8 @@ Here are the repositories from marcona
 
 TODO list :
 -----------
+see : https://github.com/marcona/codjo-tools-github/issues?labels=&page=1&state=open
 
-Priority Asap:
- - Pull request management
-   - list actual opened pull requests with the follwing display : Repo/user/Title/[URL?][Date Pull request?]
-   - generate/create codjo-pom pull request: title + content with for each pull request user and title...
-
- - Accept name without codjo prefix ? e.g. ```gh fork imports``` instead of ```gh fork codjo-imports```
-
-
- - enhance "list" method : add fork date + nb days between fork date and last push to identify projects that have been
-   forked without any modification.
-
- - DONE enhance packaging
- - rename GithubUtil
- - Enhance console help (wich account is used..etc)
-
-Priority later
- - Add a generate fonction that takes in input a repo list, a template file and in output the template with the appropriate variables replaced 
-   --> could be good for hudson or opengrok parametrization.
- - Improve unit tests
-      - DONE multiple case for repository deletion
-      - commonalize console messages between production code and tests ?
- - DONE Make unit tests be independent from env :
-      - DONE proxy trace if outside corporate proxy
-      - DONE end of line in console are different between os
- - DONE enhance console display
- - deal with external dependencies
-     - avoid if possible external dependencies (actually use egit from eclipse)
- - DONE show the github quota
- - DONE refactoring (package codjo.tools)
- - DONE Avoid delete repo on codjo account
- - DONE add unit tests ... i know its bad ;-)
- - cmd is not generic enough
- - add .cmd(DONE) and .sh in resource (DONE)
- - use netrc/_netrc by default
- - allow more options (skip proxy, use of _netrc file)
- - error management for program arguments
- - error management in github method calls e.g. delete repoThatDosNotExist
- - add interactive fork : "Wich codjo repository would you like to fork ?"
-    see : http://sourceforge.net/projects/javacurses/
-          Java-Readline or jline2.
-          http://cliche.sourceforge.net/?f=manual
- - avoid multiple if-else to select method in GithubUtil main DONE
- - yeald System.out redirection for unit-test in codjo-test ?
- - Add search in pull request, or in code !
- - automatic download of last version: is it possible to use github to download last artifact, of course ;-)
- - Merge of a "super-pom pull request" which merges the pull requests listed in it.
- - Verify if a "chantier" is really opened (last commit) on codjo-sandbox
 
  Packaging :
 -----------
