@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <!--
@@ -14,67 +15,19 @@
         <version>2.43</version>
     </parent>
     <!-- END SNIPPET: super-pom -->
-    <dependencies>
-        <dependency>
-            <groupId>net.codjo.util</groupId>
-            <artifactId>codjo-util</artifactId>
-            <version>1.11</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.mylyn.github</groupId>
-            <artifactId>org.eclipse.egit.github.core</artifactId>
-            <version>2.1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/org.eclipse.egit.github.core-2.1.0.jar</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.1</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.codjo.test</groupId>
-            <artifactId>codjo-test-common</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.sourceforge.htmlunit</groupId>
-                    <artifactId>htmlunit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.1</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <dependencies/>
 
     <name>codjo-tools-github</name>
     <description>Application standalone pour la manipulation de github</description>
+    <packaging>pom</packaging>
 
-    <packaging>jar</packaging>
+    <modules>
+        <module>codjo-tools-github-repository</module>
+        <module>codjo-tools-github-client</module>
+    </modules>
+
     <build>
-        <finalName>codjo-tools-github</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>net.codjo.tools.github.GithubCommandTool</mainClass>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib</classpathPrefix>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
@@ -84,28 +37,9 @@
                     <goals>install</goals>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <descriptors>
-                        <descriptor>target/classes/assembly/distribution.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
-
-    <profiles />
+    <profiles/>
 
     <scm>
         <connection>scm:git:https://github.com/marcona/codjo-tools-github.git</connection>
