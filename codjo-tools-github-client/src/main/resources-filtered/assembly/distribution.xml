@@ -4,24 +4,6 @@
         <format>zip</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
-
-    <moduleSets>
-        <moduleSet>
-
-            <!-- Enable access to all projects in the current multimodule build! -->
-            <!--<useAllReactorProjects>true</useAllReactorProjects>-->
-<includeSubModules>false</includeSubModules>
-            <!-- Now, select which projects to include in this module-set. -->
-            <includes>
-                <include>net.codjo.github:codjo-tools-github-client</include>
-            </includes>
-            <binaries>
-                <outputDirectory>modules/${artifactId}</outputDirectory>
-                <unpack>false</unpack>
-            </binaries>
-        </moduleSet>
-    </moduleSets>
-    <!--
     <fileSets>
         <fileSet>
             <directory>${project.basedir}/target/classes</directory>
@@ -42,9 +24,13 @@
             <directory>${project.basedir}/target</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>${project.artifactId}.jar</include>
+                <include>codjo-tools-github.jar</include>
             </includes>
         </fileSet>
     </fileSets>
-    -->
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/lib</outputDirectory>
+        </dependencySet>
+    </dependencySets>
 </assembly>
