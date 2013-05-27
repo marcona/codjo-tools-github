@@ -6,12 +6,12 @@
     -->
     <groupId>net.codjo.github</groupId>
     <artifactId>codjo-tools-github-client</artifactId>
-    <version>1.3</version>
+    <version>1.4-SNAPSHOT</version>
 
     <parent>
         <groupId>net.codjo.github</groupId>
         <artifactId>codjo-tools-github</artifactId>
-        <version>1.3</version>
+        <version>1.4-SNAPSHOT</version>
     </parent>
     <!-- END SNIPPET: super-pom -->
     <dependencies>
