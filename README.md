@@ -22,7 +22,7 @@ Example :
          - gh fork REPO_NAME      : fork a repository from codjo
          - gh delete REPO_NAME    : delete a repository if exists
          - gh postIssue REPO_NAME ISSUE_TITLE STATE ISSUE_CONTENT_FILE_PATH LABEL_LIST   : add a new issue in repository
-         - gh events [ACCOUNT_NAME] [ACCOUNT_PASSWORD]    : list all events since last stabilisation (last pull request with 'For Release' title
+         - gh events [ACCOUNT_NAME] [ACCOUNT_PASSWORD]    : list all events since last stabilisation (last pull request with 'For Release' title)
 ```
 
 

@@ -27,22 +27,6 @@
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>
-        <!--        <dependency>
-                    <groupId>org.eclipse.mylyn.github</groupId>
-                    <artifactId>org.eclipse.egit.github.core</artifactId>
-                    <version>2.1.0</version>
-                    <scope>system</scope>
-                    <systemPath>${project.basedir}/lib/org.eclipse.egit.github.core-2.1.0.jar</systemPath>
-                </dependency>
-
-
-                <dependency>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                    <version>2.1</version>
-                    <scope>compile</scope>
-                </dependency>
-        -->
         <dependency>
             <groupId>net.codjo.test</groupId>
             <artifactId>codjo-test-common</artifactId>
