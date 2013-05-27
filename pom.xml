@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <!--
@@ -7,7 +6,7 @@
     -->
     <groupId>net.codjo.github</groupId>
     <artifactId>codjo-tools-github</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3</version>
     <!-- START SNIPPET: super-pom -->
     <parent>
         <groupId>net.codjo.pom</groupId>
@@ -15,7 +14,7 @@
         <version>2.43</version>
     </parent>
     <!-- END SNIPPET: super-pom -->
-    <dependencies/>
+    <dependencies />
 
     <name>codjo-tools-github</name>
     <description>Application standalone pour la manipulation de github</description>
@@ -39,7 +38,7 @@
             </plugin>
         </plugins>
     </build>
-    <profiles/>
+    <profiles />
 
     <scm>
         <connection>scm:git:https://github.com/marcona/codjo-tools-github.git</connection>
