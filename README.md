@@ -59,4 +59,9 @@ see : https://github.com/marcona/codjo-tools-github/issues?labels=&page=1&state=
 
   * mvn release:prepare
   * mvn release:perform -DconnectionUrl=scm:git:file:///c:/dev/projects/github/codjo-tools-github/.git
-  * unzip /target/codjo-tools-github-assembly.zip where you want
+  * unzip /target/codjo-tools-github-assembly.zip where you want AND replace the values in cmd or sh files (gihtub account, password and tool location)
+
+  * Publish on github
+       * git gc
+       * git push
+       * git push --tag

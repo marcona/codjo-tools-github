@@ -8,7 +8,7 @@
 # 
 # .bash_profile sample declaration :
 #	function gh() {
-#	      . codjo-tools-github.sh $1 'codjo-sandbox' 'XXXXXXXPASSWORD' $2 
+#	      . codjo-tools-github.sh $1 'XXXXXXXGITHUB_PASSWORD' 'XXXXXXXPASSWORD' $2
 #	}
 #
 #	# set PATH so it includes user's private bin if it exists
@@ -19,7 +19,9 @@
 #
 # ######################################################################
 
-_CODJO_TOOLS_GITHUB_ROOT=~/dev/tools/codjo-tools-github
+
+#_CODJO_TOOLS_GITHUB_ROOT=~/dev/tools/codjo-tools-github
+_CODJO_TOOLS_GITHUB_ROOT=XXXXXXX
 
 _GITHUB_METHOD=$1
 _GITHUB_USER_NAME=$2
